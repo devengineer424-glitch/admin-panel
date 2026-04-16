@@ -499,8 +499,8 @@ to{transform:scale(1)}
 
 <script>
 
-const API="https://tagsb.vercel.app"
-const TOKEN_KEY="khuljasimsimkhuljasimsim"
+const API="https://admin-panel-ten-green.vercel.app"
+const TOKEN_KEY="admin_access_token"
 const SUPABASE_URL_DEFAULT="https://hmdfmiqqeoxdnewksoxj.supabase.co"
 const SUPABASE_ANON_KEY_DEFAULT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZGZtaXFxZW94ZG5ld2tzb3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODI2NTIsImV4cCI6MjA4ODk1ODY1Mn0.NBDkVsUJjNBcwVOPwkOahp9Z8VvaSeqWkpCXqSL-S0M"
 
@@ -607,11 +607,14 @@ body:JSON.stringify({email,password})
 
 const data=await response.json().catch(()=>({}))
 
-if(!response.ok || !data.access_token){
-throw new Error(data.error_description || data.msg || "Login failed")
+const token = data.access_token || data.session?.access_token
+
+if(!response.ok || !token){
+  throw new Error(data.error_description || data.msg || "Login failed")
 }
 
-localStorage.setItem(TOKEN_KEY, data.access_token)
+localStorage.setItem(TOKEN_KEY, token)
+
 showAdmin()
 loadBlogs()
 }catch(err){
