@@ -280,7 +280,7 @@ overflow:auto;
 animation:pop .2s;
 }
 
-input,textarea{
+input,textarea,select{
 width:100%;
 padding:10px;
 margin-bottom:12px;
@@ -847,6 +847,168 @@ row.appendChild(removeBtn)
 container.appendChild(row)
 }
 
+function addBlogPairRow(containerId, firstClass, secondClass, firstPlaceholder, secondPlaceholder, firstValue="", secondValue=""){
+const container=document.getElementById(containerId)
+
+if(!container) return
+
+const row=document.createElement("div")
+row.className="result-row"
+
+const firstInput=document.createElement("input")
+firstInput.type="text"
+firstInput.className=firstClass
+firstInput.placeholder=firstPlaceholder
+firstInput.value=firstValue
+
+const secondInput=document.createElement("input")
+secondInput.type="text"
+secondInput.className=secondClass
+secondInput.placeholder=secondPlaceholder
+secondInput.value=secondValue
+
+const removeBtn=document.createElement("button")
+removeBtn.type="button"
+removeBtn.className="btn btn-danger btn-small"
+removeBtn.textContent="Remove"
+removeBtn.addEventListener("click",()=>row.remove())
+
+row.appendChild(firstInput)
+row.appendChild(secondInput)
+row.appendChild(removeBtn)
+
+container.appendChild(row)
+}
+
+const CTA_ACTION_OPTIONS=[
+"/",
+"/contact-us",
+"/case-studies",
+"/blogs",
+"/services",
+"/about-us",
+"/careers",
+"/industries"
+]
+
+function addCtaButtonRow(textValue="", actionValue=""){
+const container=document.getElementById("ctaButtonsRows")
+
+if(!container) return
+
+const row=document.createElement("div")
+row.className="result-row"
+
+const textInput=document.createElement("input")
+textInput.type="text"
+textInput.className="cta-btn-text"
+textInput.placeholder="Button text"
+textInput.value=textValue
+
+const actionSelect=document.createElement("select")
+actionSelect.className="cta-btn-action"
+
+const placeholderOption=document.createElement("option")
+placeholderOption.value=""
+placeholderOption.textContent="Select button link"
+actionSelect.appendChild(placeholderOption)
+
+CTA_ACTION_OPTIONS.forEach((optionValue)=>{
+const option=document.createElement("option")
+option.value=optionValue
+option.textContent=optionValue
+actionSelect.appendChild(option)
+})
+
+if(actionValue && !CTA_ACTION_OPTIONS.includes(actionValue)){
+const customOption=document.createElement("option")
+customOption.value=actionValue
+customOption.textContent=`${actionValue} (existing)`
+actionSelect.appendChild(customOption)
+}
+
+actionSelect.value=actionValue || ""
+
+const removeBtn=document.createElement("button")
+removeBtn.type="button"
+removeBtn.className="btn btn-danger btn-small"
+removeBtn.textContent="Remove"
+removeBtn.addEventListener("click",()=>row.remove())
+
+row.appendChild(textInput)
+row.appendChild(actionSelect)
+row.appendChild(removeBtn)
+
+container.appendChild(row)
+}
+
+function getBlogPairRows(containerId, firstSelector, secondSelector, firstKey, secondKey){
+const rows=document.querySelectorAll(`#${containerId} .result-row`)
+
+return Array.from(rows)
+.map(row=>({
+[firstKey]: (row.querySelector(`.${firstSelector}`)?.value || "").trim(),
+[secondKey]: (row.querySelector(`.${secondSelector}`)?.value || "").trim()
+}))
+.filter(item=>item[firstKey] || item[secondKey])
+}
+
+function validateRequiredBlogFields(values, status){
+const missing=[]
+
+if(!String(values.slug || "").trim()) missing.push("Slug")
+if(!String(values.title || "").trim()) missing.push("Title")
+if(!String(values.hero_image || "").trim()) missing.push("Hero Image URL")
+if(!String(values.quote_content || "").trim()) missing.push("Quote Content")
+
+if(missing.length){
+status.innerHTML=`<span class='error'>Please fill: ${missing.join(", ")}</span>`
+return false
+}
+
+return true
+}
+
+function initBlogCollectionEditors(existingData=null){
+const steps=Array.isArray(existingData?.steps) ? existingData.steps : []
+const infoCards=Array.isArray(existingData?.info_cards) ? existingData.info_cards : []
+const ctaButtons=Array.isArray(existingData?.cta?.buttons) ? existingData.cta.buttons : []
+
+const addStepBtn=document.getElementById("addStepBtn")
+const addInfoCardBtn=document.getElementById("addInfoCardBtn")
+const addCtaButtonBtn=document.getElementById("addCtaButtonBtn")
+
+if(addStepBtn){
+addStepBtn.addEventListener("click",()=>addBlogPairRow("stepsRows", "step-title", "step-description", "Step title", "Step description"))
+}
+
+if(addInfoCardBtn){
+addInfoCardBtn.addEventListener("click",()=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content"))
+}
+
+if(addCtaButtonBtn){
+addCtaButtonBtn.addEventListener("click",()=>addCtaButtonRow())
+}
+
+if(steps.length){
+steps.forEach(item=>addBlogPairRow("stepsRows", "step-title", "step-description", "Step title", "Step description", item.title || "", item.description || ""))
+}else{
+addBlogPairRow("stepsRows", "step-title", "step-description", "Step title", "Step description")
+}
+
+if(infoCards.length){
+infoCards.forEach(item=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content", item.title || "", item.content || ""))
+}else{
+addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content")
+}
+
+if(ctaButtons.length){
+ctaButtons.forEach(item=>addCtaButtonRow(item.text || "", item.action || ""))
+}else{
+addCtaButtonRow()
+}
+}
+
 function getResultsFromRows(){
 const rows=document.querySelectorAll("#resultsRows .result-row")
 
@@ -930,6 +1092,31 @@ return String(text || "")
 .replace(/-+/g, "-")
 }
 
+function formatFieldName(name){
+if(!name) return "Field"
+return String(name)
+.replace(/_/g, " ")
+.replace(/\b\w/g, c=>c.toUpperCase())
+}
+
+function ensureFieldLabels(form){
+if(!form) return
+
+const fields=form.querySelectorAll('input[name], textarea[name], select[name]')
+
+fields.forEach((field)=>{
+if(field.type==="hidden") return
+
+const prev=field.previousElementSibling
+if(prev && prev.classList && prev.classList.contains("field-label")) return
+
+const label=document.createElement("label")
+label.className="field-label"
+label.textContent=field.getAttribute("placeholder") || formatFieldName(field.name)
+field.parentNode.insertBefore(label, field)
+})
+}
+
 function addTagChip(tag){
 const cleanTag=String(tag || "").trim()
 
@@ -1003,17 +1190,43 @@ let form=document.getElementById("dataForm")
 if(current==="blogs"){
 
 form.innerHTML=`
-<input name="slug" placeholder="Slug">
+<input name="slug" placeholder="Slug" required>
 <div id="slugHint" class="help-text">Use lowercase words separated by hyphens.</div>
-<input name="title" placeholder="Title">
-<input name="image" placeholder="Image URL">
-<input name="author" placeholder="Author">
-<input type="date" name="date" value="${today}">
-<input name="category" placeholder="Category">
-<textarea name="excerpt" placeholder="Excerpt"></textarea>
+<input name="title" placeholder="Title" required>
+<input name="hero_badge" placeholder="Hero Badge">
+<input name="hero_subtitle" placeholder="Hero Subtitle">
+<input name="hero_image" placeholder="Hero Image URL" required>
+<input name="meta_author" placeholder="Author">
+<input type="datetime-local" name="meta_date">
+<input name="meta_category" placeholder="Category">
 <textarea name="content" placeholder="Markdown Content"></textarea>
 <label class="field-label">Content Preview</label>
 <div id="contentPreview" class="preview-box"><em>Preview will appear here as you type markdown.</em></div>
+<textarea name="text_introduction" placeholder="Introduction"></textarea>
+<textarea name="text_current_landscape" placeholder="Current Landscape"></textarea>
+<textarea name="text_my_perspective" placeholder="My Perspective"></textarea>
+<textarea name="text_why_this_matters" placeholder="Why This Matters"></textarea>
+<input name="highlight_title" placeholder="Highlight Box Title">
+<textarea name="highlight_content" placeholder="Highlight Box Content"></textarea>
+<div class="results-header">
+<span class="results-title">Steps</span>
+<button type="button" class="btn btn-primary btn-small" id="addStepBtn">Add Step</button>
+</div>
+<div id="stepsRows"></div>
+<div class="results-header">
+<span class="results-title">Info Cards</span>
+<button type="button" class="btn btn-primary btn-small" id="addInfoCardBtn">Add Card</button>
+</div>
+<div id="infoCardsRows"></div>
+<textarea name="quote_content" placeholder="Quote Content" required></textarea>
+<input name="quote_author" placeholder="Quote Author">
+<input name="cta_title" placeholder="CTA Title">
+<textarea name="cta_description" placeholder="CTA Description"></textarea>
+<div class="results-header">
+<span class="results-title">CTA Buttons</span>
+<button type="button" class="btn btn-primary btn-small" id="addCtaButtonBtn">Add Button</button>
+</div>
+<div id="ctaButtonsRows"></div>
 `
 
 const titleInput=form.querySelector('input[name="title"]')
@@ -1062,6 +1275,38 @@ if(!slugInput.value.trim()) slugInput.value=slugify(titleInput.value)
 }
 
 if(existingData){
+if(current==="blogs"){
+const setField=(name, value)=>{
+const node=form.querySelector(`[name="${name}"]`)
+if(node && value!==undefined && value!==null) node.value=String(value)
+}
+
+setField("slug", existingData.slug)
+setField("title", existingData.title)
+setField("content", existingData.content)
+setField("hero_badge", existingData.hero?.badge)
+setField("hero_subtitle", existingData.hero?.subtitle)
+setField("hero_image", existingData.hero?.image)
+setField("meta_author", existingData.meta?.author)
+if(existingData.meta?.date){
+const localDate=new Date(existingData.meta.date)
+if(!Number.isNaN(localDate.getTime())){
+setField("meta_date", localDate.toISOString().slice(0,16))
+}
+}
+setField("meta_category", existingData.meta?.category)
+setField("text_introduction", existingData.text_sections?.introduction)
+setField("text_current_landscape", existingData.text_sections?.current_landscape)
+setField("text_my_perspective", existingData.text_sections?.my_perspective)
+setField("text_why_this_matters", existingData.text_sections?.why_this_matters)
+setField("highlight_title", existingData.highlight_box?.title)
+setField("highlight_content", existingData.highlight_box?.content)
+setField("quote_content", existingData.quote?.content)
+setField("quote_author", existingData.quote?.author)
+setField("cta_title", existingData.cta?.title)
+setField("cta_description", existingData.cta?.description)
+initBlogCollectionEditors(existingData)
+}else{
 Array.from(form.elements).forEach(el=>{
 if(el.name && existingData[el.name]!==undefined && existingData[el.name]!==null){
 if(el.name==="tags" && Array.isArray(existingData.tags)){
@@ -1073,6 +1318,7 @@ el.value=existingData[el.name]
 }
 }
 })
+}
 
 if(current==="case-studies"){
 const results=Array.isArray(existingData.results)?existingData.results:[]
@@ -1089,6 +1335,8 @@ addResultRow()
 }else if(current==="case-studies"){
 initTagEditor()
 addResultRow()
+}else if(current==="blogs"){
+initBlogCollectionEditors()
 }
 
 const slugInput=form.querySelector('input[name="slug"]')
@@ -1101,6 +1349,8 @@ slugInput.addEventListener("input", updateSlugHint)
 if(contentInput){
 contentInput.addEventListener("input", updateContentPreview)
 }
+
+ensureFieldLabels(form)
 
 updateSlugHint()
 updateContentPreview()
@@ -1126,6 +1376,75 @@ let data={}
 Array.from(form.elements).forEach(el=>{
 if(el.name)data[el.name]=el.value
 })
+
+if(current==="blogs"){
+const cleanValue=(value)=>{
+const v=String(value || "").trim()
+return v ? v : null
+}
+
+if(!validateRequiredBlogFields(data, status)){
+return
+}
+
+const compactObject=(obj)=>{
+const entries=Object.entries(obj).filter(([, value])=>{
+if(value===null || value===undefined) return false
+if(Array.isArray(value)) return value.length>0
+if(typeof value==="string") return value.trim()!==""
+return true
+})
+
+return entries.length ? Object.fromEntries(entries) : null
+}
+
+try{
+const steps=getBlogPairRows("stepsRows", "step-title", "step-description", "title", "description")
+const infoCards=getBlogPairRows("infoCardsRows", "info-title", "info-content", "title", "content")
+const ctaButtons=getBlogPairRows("ctaButtonsRows", "cta-btn-text", "cta-btn-action", "text", "action")
+const metaDateRaw=cleanValue(data.meta_date)
+
+data={
+slug: cleanValue(data.slug) || "",
+title: cleanValue(data.title) || "",
+content: cleanValue(data.content),
+hero: compactObject({
+badge: cleanValue(data.hero_badge),
+subtitle: cleanValue(data.hero_subtitle),
+image: cleanValue(data.hero_image)
+}),
+meta: compactObject({
+author: cleanValue(data.meta_author),
+date: metaDateRaw ? new Date(metaDateRaw).toISOString() : null,
+category: cleanValue(data.meta_category)
+}),
+text_sections: compactObject({
+introduction: cleanValue(data.text_introduction),
+current_landscape: cleanValue(data.text_current_landscape),
+my_perspective: cleanValue(data.text_my_perspective),
+why_this_matters: cleanValue(data.text_why_this_matters)
+}),
+highlight_box: compactObject({
+title: cleanValue(data.highlight_title),
+content: cleanValue(data.highlight_content)
+}),
+steps: steps.length ? steps : null,
+info_cards: infoCards.length ? infoCards : null,
+quote: compactObject({
+content: cleanValue(data.quote_content),
+author: cleanValue(data.quote_author)
+}),
+cta: compactObject({
+title: cleanValue(data.cta_title),
+description: cleanValue(data.cta_description),
+buttons: ctaButtons.length ? ctaButtons : null
+})
+}
+}catch(err){
+status.innerHTML=`<span class='error'>${err.message || "Invalid blogs data"}</span>`
+return
+}
+}
 
 if(current==="case-studies"){
 data.tags=getTagsFromChips()
