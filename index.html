@@ -982,6 +982,27 @@ if(plain.length<=190) return plain
 return `${plain.slice(0, 190)}...`
 }
 
+function formatBlogDate(blog){
+const candidateDates=[
+blog?.meta?.date,
+blog?.meta_date,
+blog?.date,
+blog?.published_at,
+blog?.updated_at,
+blog?.created_at
+]
+
+for(const value of candidateDates){
+if(!value) continue
+const parsed=new Date(value)
+if(!Number.isNaN(parsed.getTime())){
+return parsed.toLocaleDateString()
+}
+}
+
+return "No date"
+}
+
 function getStringHue(value){
 const text=String(value || "untagged")
 let hash=0
@@ -1059,8 +1080,7 @@ card.className="blog-card"
 
 const sourceText=String(blog.content || blog.text_sections?.introduction || "")
 const excerpt=getBlogExcerpt(sourceText)
-const createdAt=blog.updated_at || blog.created_at
-const dateLabel=createdAt ? new Date(createdAt).toLocaleDateString() : "No date"
+const dateLabel=formatBlogDate(blog)
 const category=blog.meta?.category || "General"
 const author=blog.meta?.author || "Unknown author"
 const rawTags=Array.isArray(blog.tags) ? blog.tags : []
