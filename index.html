@@ -305,6 +305,77 @@ grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
 gap:18px;
 }
 
+.design-legend{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin:0 0 18px;
+}
+
+.design-legend-item{
+display:inline-flex;
+align-items:center;
+gap:8px;
+padding:7px 12px;
+border-radius:999px;
+background:white;
+border:1px solid #e5e7eb;
+font-size:12px;
+font-weight:700;
+color:#111827;
+box-shadow:0 1px 2px rgba(0,0,0,0.04);
+}
+
+.design-dot{
+width:10px;
+height:10px;
+border-radius:999px;
+display:inline-block;
+}
+
+.design-badge{
+display:inline-flex;
+align-items:center;
+gap:6px;
+padding:5px 10px;
+border-radius:999px;
+font-size:11px;
+font-weight:800;
+letter-spacing:0.02em;
+text-transform:uppercase;
+width:max-content;
+}
+
+.design-1{
+background:#eff6ff;
+color:#1d4ed8;
+}
+
+.design-1 .design-dot,
+.design-legend-item.design-1 .design-dot{
+background:#2563eb;
+}
+
+.design-2{
+background:#fff7ed;
+color:#c2410c;
+}
+
+.design-2 .design-dot,
+.design-legend-item.design-2 .design-dot{
+background:#f97316;
+}
+
+.design-3{
+background:#f5f3ff;
+color:#6d28d9;
+}
+
+.design-3 .design-dot,
+.design-legend-item.design-3 .design-dot{
+background:#8b5cf6;
+}
+
 .blog-card{
 background:linear-gradient(160deg, var(--card-tint, #f8fbff) 0%, #ffffff 55%);
 border:1px solid #e5e7eb;
@@ -341,6 +412,29 @@ padding:4px 8px;
 border-radius:999px;
 display:inline-block;
 max-width:fit-content;
+}
+
+.blog-card.design-1 .blog-slug{
+background:#dbeafe;
+color:#1d4ed8;
+}
+
+.blog-card.design-2 .blog-slug{
+background:#ffedd5;
+color:#c2410c;
+}
+
+.blog-card.design-3 .blog-slug{
+background:#ede9fe;
+color:#6d28d9;
+}
+
+.blog-design-row{
+display:flex;
+justify-content:flex-start;
+align-items:center;
+gap:10px;
+flex-wrap:wrap;
 }
 
 .blog-meta{
@@ -384,6 +478,21 @@ overflow:hidden;
 display:flex;
 gap:8px;
 margin-top:auto;
+}
+
+.blog-card.design-1{
+border-top-color:#2563eb;
+box-shadow:0 2px 8px rgba(37,99,235,0.08);
+}
+
+.blog-card.design-2{
+border-top-color:#f97316;
+box-shadow:0 2px 8px rgba(249,115,22,0.08);
+}
+
+.blog-card.design-3{
+border-top-color:#8b5cf6;
+box-shadow:0 2px 8px rgba(139,92,246,0.08);
 }
 
 .empty-state{
@@ -1085,12 +1194,23 @@ container.innerHTML='<div class="empty-state">No blogs yet.</div>'
 return
 }
 
+const legend=document.createElement("div")
+legend.className="design-legend"
+legend.innerHTML=`
+<span class="design-legend-item design-1"><span class="design-dot"></span>Design 1</span>
+<span class="design-legend-item design-2"><span class="design-dot"></span>Design 2</span>
+<span class="design-legend-item design-3"><span class="design-dot"></span>Design 3</span>
+`
+
+container.appendChild(legend)
+
 const grid=document.createElement("div")
 grid.className="blogs-grid"
 
 currentItems.forEach((blog)=>{
 const card=document.createElement("div")
-card.className="blog-card"
+const designNumber=[1,2,3].includes(Number(blog.design_number)) ? Number(blog.design_number) : 1
+card.className=`blog-card design-${designNumber}`
 
 const sourceText=String(blog.content || blog.text_sections?.introduction || "")
 const excerpt=getBlogExcerpt(sourceText)
@@ -1100,15 +1220,23 @@ const author=blog.meta?.author || "Unknown author"
 const rawTags=Array.isArray(blog.tags) ? blog.tags : []
 const tags=[...new Set(rawTags.map(tag=>String(tag || "").trim()).filter(Boolean))]
 const displayTags=(tags.length ? tags : [category]).slice(0, 5)
-const accentHue=getStringHue(displayTags[0] || blog.slug || blog.title || "general")
 const tagsMarkup=displayTags
 .map(tag=>`<span class="blog-tag" style="${getTagStyle(tag)}">${escapeHtml(tag)}</span>`)
 .join("")
 
-card.style.setProperty("--card-accent", `hsl(${accentHue} 75% 47%)`)
-card.style.setProperty("--card-tint", `hsl(${accentHue} 100% 98%)`)
+const designPalette={
+1:{accent:"#2563eb", tint:"#eff6ff"},
+2:{accent:"#f97316", tint:"#fff7ed"},
+3:{accent:"#8b5cf6", tint:"#f5f3ff"}
+}[designNumber]
+
+card.style.setProperty("--card-accent", designPalette.accent)
+card.style.setProperty("--card-tint", designPalette.tint)
 
 card.innerHTML=`
+<div class="blog-design-row">
+<span class="design-badge design-${designNumber}"><span class="design-dot"></span>Design ${designNumber}</span>
+</div>
 <div class="blog-title">${escapeHtml(blog.title || "Untitled blog")}</div>
 <div class="blog-slug">/${escapeHtml(blog.slug || "no-slug")}</div>
 <div class="blog-meta">
@@ -1564,6 +1692,11 @@ form.innerHTML=`
 <input name="slug" placeholder="Slug" required>
 <div id="slugHint" class="help-text">Use lowercase words separated by hyphens.</div>
 <input name="title" placeholder="Title" required>
+<select name="design_number" required>
+<option value="1">Design 1</option>
+<option value="2">Design 2</option>
+<option value="3">Design 3</option>
+</select>
 <input name="hero_badge" placeholder="Hero Badge">
 <input name="hero_subtitle" placeholder="Hero Subtitle">
 <input name="hero_image" placeholder="Hero Image URL" required>
@@ -1654,6 +1787,7 @@ if(node && value!==undefined && value!==null) node.value=String(value)
 
 setField("slug", existingData.slug)
 setField("title", existingData.title)
+setField("design_number", String(existingData.design_number || 1))
 setField("content", existingData.content)
 setField("hero_badge", existingData.hero?.badge)
 setField("hero_subtitle", existingData.hero?.subtitle)
@@ -1792,6 +1926,7 @@ const metaDateRaw=cleanValue(data.meta_date)
 data={
 slug: cleanValue(data.slug) || "",
 title: cleanValue(data.title) || "",
+design_number: Number.parseInt(String(data.design_number || "1"), 10) || 1,
 content: cleanValue(data.content),
 hero: compactObject({
 badge: cleanValue(data.hero_badge),
