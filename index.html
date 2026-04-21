@@ -200,6 +200,15 @@ color:white;
 background:#0284c7;
 }
 
+.btn-open{
+background:#7c3aed;
+color:white;
+}
+
+.btn-open:hover{
+background:#6d28d9;
+}
+
 /* TABLE */
 
 table{
@@ -1060,6 +1069,11 @@ alert("Could not copy URL. Please copy manually: " + shareUrl)
 }
 }
 
+function openBlogInNewTab(slug){
+const blogUrl=buildBlogShareUrl(slug)
+window.open(blogUrl, "_blank", "noopener,noreferrer")
+}
+
 function renderBlogsView(data){
 currentItems=Array.isArray(data)?data:[]
 
@@ -1109,6 +1123,7 @@ card.innerHTML=`
 <div class="blog-actions">
 <button class="btn btn-edit" onclick="edit('${blog.id}')">Edit</button>
 <button class="btn btn-danger" onclick="removeItem('${blog.id}')">Delete</button>
+<button class="btn btn-open" onclick="openBlogInNewTab('${escapeHtml(blog.slug || "")}')">Open</button>
 <button class="btn btn-share" data-slug="${escapeHtml(blog.slug || "")}" onclick="copyBlogUrl(this.dataset.slug, this)">Copy URL</button>
 </div>
 `
