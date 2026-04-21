@@ -137,6 +137,27 @@ color:white;
 background:#1d4ed8;
 }
 
+.btn[disabled]{
+opacity:0.7;
+cursor:not-allowed;
+}
+
+.btn-loader{
+display:inline-block;
+width:14px;
+height:14px;
+margin-right:8px;
+border:2px solid rgba(255,255,255,0.45);
+border-top-color:#ffffff;
+border-radius:50%;
+animation:spin 0.7s linear infinite;
+vertical-align:-2px;
+}
+
+@keyframes spin{
+to{transform:rotate(360deg)}
+}
+
 .btn-danger{
 background:#ef4444;
 color:white;
@@ -153,6 +174,15 @@ color:white;
 
 .btn-edit:hover{
 background:#d97706;
+}
+
+.btn-share{
+background:#0ea5e9;
+color:white;
+}
+
+.btn-share:hover{
+background:#0284c7;
 }
 
 /* TABLE */
@@ -243,6 +273,66 @@ line-height:1.6;
 color:#1f2937;
 white-space:pre-wrap;
 word-break:break-word;
+}
+
+.blogs-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+gap:16px;
+}
+
+.blog-card{
+background:#ffffff;
+border:1px solid #e5e7eb;
+border-radius:12px;
+padding:16px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.blog-title{
+font-size:18px;
+font-weight:700;
+color:#111827;
+line-height:1.3;
+}
+
+.blog-slug{
+font-size:12px;
+font-weight:600;
+color:#2563eb;
+background:#eff6ff;
+padding:4px 8px;
+border-radius:999px;
+display:inline-block;
+max-width:fit-content;
+}
+
+.blog-meta{
+font-size:12px;
+color:#6b7280;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
+.blog-excerpt{
+font-size:14px;
+line-height:1.55;
+color:#1f2937;
+display:-webkit-box;
+-webkit-line-clamp:4;
+line-clamp:4;
+-webkit-box-orient:vertical;
+overflow:hidden;
+}
+
+.blog-actions{
+display:flex;
+gap:8px;
+margin-top:auto;
 }
 
 .empty-state{
@@ -488,7 +578,7 @@ to{transform:scale(1)}
 
 <form id="dataForm"></form>
 
-<button type="button" class="btn btn-primary" onclick="save(event)">Save</button>
+<button type="button" id="saveBtn" class="btn btn-primary" onclick="save(event)">Save</button>
 <button type="button" class="btn" onclick="closeModal()">Cancel</button>
 
 <div id="status" class="status"></div>
@@ -500,6 +590,7 @@ to{transform:scale(1)}
 <script>
 
 const API="https://tagsb.vercel.app"
+const FRONTEND_URL="https://www.tagsolutionsltd.com"
 const TOKEN_KEY="admin_access_token"
 const SUPABASE_URL_DEFAULT="https://hmdfmiqqeoxdnewksoxj.supabase.co"
 const SUPABASE_ANON_KEY_DEFAULT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhtZGZtaXFxZW94ZG5ld2tzb3hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODI2NTIsImV4cCI6MjA4ODk1ODY1Mn0.NBDkVsUJjNBcwVOPwkOahp9Z8VvaSeqWkpCXqSL-S0M"
@@ -641,11 +732,11 @@ current="blogs"
 setActive(document.getElementById("blogNav"))
 document.getElementById("sectionTitle").innerText="Blogs"
 setAddVisibility()
-setMessagesView(false)
+setMessagesView(true)
 
 authFetch(API+"/blogs/")
 .then(r=>r.json())
-.then(renderTable)
+.then(renderBlogsView)
 
 .catch((err)=>{
 setStatus("loginStatus", err.message || "Request failed", true)
@@ -756,6 +847,106 @@ card.innerHTML=`
 </div>
 <div class="message-subject">${escapeHtml(msg.subject || "No Subject")}</div>
 <div class="message-body">${escapeHtml(msg.message || "")}</div>
+`
+
+grid.appendChild(card)
+})
+
+container.appendChild(grid)
+}
+
+function getBlogExcerpt(content){
+const plain=String(content || "")
+.replace(/```[\s\S]*?```/g, " ")
+.replace(/`([^`]+)`/g, "$1")
+.replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+.replace(/[#>*_\-]/g, " ")
+.replace(/\s+/g, " ")
+.trim()
+
+if(!plain) return "No preview text available."
+if(plain.length<=190) return plain
+return `${plain.slice(0, 190)}...`
+}
+
+function buildBlogShareUrl(slug){
+const base=String(FRONTEND_URL || "").replace(/\/+$/, "")
+const cleanSlug=String(slug || "").trim()
+if(!cleanSlug) return `${base}/blogs`
+return `${base}/blogs/${encodeURIComponent(cleanSlug)}`
+}
+
+async function copyBlogUrl(slug, button){
+const shareUrl=buildBlogShareUrl(slug)
+
+try{
+if(navigator.clipboard && window.isSecureContext){
+await navigator.clipboard.writeText(shareUrl)
+}else{
+const temp=document.createElement("textarea")
+temp.value=shareUrl
+temp.setAttribute("readonly", "")
+temp.style.position="absolute"
+temp.style.left="-9999px"
+document.body.appendChild(temp)
+temp.select()
+document.execCommand("copy")
+document.body.removeChild(temp)
+}
+
+if(button){
+const original=button.textContent
+button.textContent="Copied"
+setTimeout(()=>{
+button.textContent=original || "Copy URL"
+}, 1200)
+}
+}catch(_error){
+alert("Could not copy URL. Please copy manually: " + shareUrl)
+}
+}
+
+function renderBlogsView(data){
+currentItems=Array.isArray(data)?data:[]
+
+const container=document.getElementById("messagesView")
+container.innerHTML=""
+
+if(currentItems.length===0){
+container.innerHTML='<div class="empty-state">No blogs yet.</div>'
+return
+}
+
+const grid=document.createElement("div")
+grid.className="blogs-grid"
+
+currentItems.forEach((blog)=>{
+const card=document.createElement("div")
+card.className="blog-card"
+
+const sourceText=String(blog.content || blog.text_sections?.introduction || "")
+const excerpt=getBlogExcerpt(sourceText)
+const createdAt=blog.updated_at || blog.created_at
+const dateLabel=createdAt ? new Date(createdAt).toLocaleDateString() : "No date"
+const category=blog.meta?.category || "General"
+const author=blog.meta?.author || "Unknown author"
+
+card.innerHTML=`
+<div class="blog-title">${escapeHtml(blog.title || "Untitled blog")}</div>
+<div class="blog-slug">/${escapeHtml(blog.slug || "no-slug")}</div>
+<div class="blog-meta">
+<span>${escapeHtml(category)}</span>
+<span>•</span>
+<span>${escapeHtml(author)}</span>
+<span>•</span>
+<span>${escapeHtml(dateLabel)}</span>
+</div>
+<div class="blog-excerpt">${escapeHtml(excerpt)}</div>
+<div class="blog-actions">
+<button class="btn btn-edit" onclick="edit('${blog.id}')">Edit</button>
+<button class="btn btn-danger" onclick="removeItem('${blog.id}')">Delete</button>
+<button class="btn btn-share" data-slug="${escapeHtml(blog.slug || "")}" onclick="copyBlogUrl(this.dataset.slug, this)">Copy URL</button>
+</div>
 `
 
 grid.appendChild(card)
@@ -1370,6 +1561,20 @@ if(event) event.preventDefault()
 
 const form=document.getElementById("dataForm")
 const status=document.getElementById("status")
+const saveBtn=document.getElementById("saveBtn")
+
+if(saveBtn && saveBtn.disabled) return
+
+const setSavingState=(isSaving)=>{
+if(!saveBtn) return
+if(isSaving){
+saveBtn.disabled=true
+saveBtn.innerHTML="<span class='btn-loader' aria-hidden='true'></span>Saving..."
+return
+}
+saveBtn.disabled=false
+saveBtn.textContent="Save"
+}
 
 let data={}
 
@@ -1492,6 +1697,7 @@ return res.json()
 .catch(()=>({ok:res.ok,data:{}}))
 })
 .then(({ok,data})=>{
+setSavingState(false)
 if(!ok){
 const message=data.detail || "Request failed"
 throw new Error(message)
@@ -1500,8 +1706,11 @@ status.innerHTML="<span class='success'>Saved successfully</span>"
 setTimeout(()=>location.reload(),800)
 })
 .catch((err)=>{
+setSavingState(false)
 status.innerHTML=`<span class='error'>${err.message || "Error saving data"}</span>`
 })
+
+setSavingState(true)
 
 }
 
