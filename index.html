@@ -113,6 +113,12 @@ align-items:center;
 margin-bottom:20px;
 }
 
+.header-actions{
+display:flex;
+gap:8px;
+align-items:center;
+}
+
 .section-title{
 font-size:24px;
 font-weight:600;
@@ -135,6 +141,15 @@ color:white;
 
 .btn-primary:hover{
 background:#1d4ed8;
+}
+
+.btn-copy{
+background:#0f766e;
+color:white;
+}
+
+.btn-copy:hover{
+background:#0d5f59;
 }
 
 .btn[disabled]{
@@ -278,18 +293,27 @@ word-break:break-word;
 .blogs-grid{
 display:grid;
 grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
-gap:16px;
+gap:18px;
 }
 
 .blog-card{
-background:#ffffff;
+background:linear-gradient(160deg, var(--card-tint, #f8fbff) 0%, #ffffff 55%);
 border:1px solid #e5e7eb;
+border-top:4px solid var(--card-accent, #2563eb);
 border-radius:12px;
 padding:16px;
 box-shadow:0 2px 8px rgba(0,0,0,0.05);
 display:flex;
 flex-direction:column;
 gap:10px;
+transition:transform 0.18s ease, box-shadow 0.18s ease;
+position:relative;
+overflow:hidden;
+}
+
+.blog-card:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 24px rgba(17,24,39,0.12);
 }
 
 .blog-title{
@@ -316,6 +340,24 @@ color:#6b7280;
 display:flex;
 gap:8px;
 flex-wrap:wrap;
+}
+
+.blog-tags{
+display:flex;
+gap:7px;
+flex-wrap:wrap;
+}
+
+.blog-tag{
+display:inline-flex;
+align-items:center;
+font-size:11px;
+font-weight:700;
+letter-spacing:0.02em;
+padding:4px 9px;
+border-radius:999px;
+border:1px solid transparent;
+text-transform:capitalize;
 }
 
 .blog-excerpt{
@@ -554,7 +596,10 @@ to{transform:scale(1)}
 
 <div class="header">
 <div class="section-title" id="sectionTitle">Blogs</div>
+<div class="header-actions">
 <button class="btn btn-primary" id="addBtn" onclick="openCreate()">Add New</button>
+<button class="btn btn-copy" id="copyEmailsBtn" onclick="copyAllSubscriberEmails()" style="display:none">Copy All Emails</button>
+</div>
 </div>
 
 <table>
@@ -721,6 +766,69 @@ function setAddVisibility(){
 document.getElementById("addBtn").style.display=isReadOnlySection()?"none":"inline-block"
 }
 
+function getSubscriberEmails(){
+return Array.from(new Set(
+currentItems
+.map(item=>String(item?.email || item?.gmail || item?.mail || "").trim())
+.filter(Boolean)
+))
+}
+
+function setSubscriberActionsVisibility(){
+const copyBtn=document.getElementById("copyEmailsBtn")
+if(!copyBtn) return
+
+const isSubscribers=current==="newsletter-subscribers"
+
+if(!isSubscribers){
+copyBtn.style.display="none"
+copyBtn.disabled=true
+copyBtn.textContent="Copy All Emails"
+return
+}
+
+const emails=getSubscriberEmails()
+
+copyBtn.style.display="inline-block"
+copyBtn.disabled=emails.length===0
+copyBtn.textContent=emails.length ? `Copy All Emails (${emails.length})` : "Copy All Emails"
+}
+
+async function copyAllSubscriberEmails(){
+const emails=getSubscriberEmails()
+
+if(!emails.length){
+alert("No subscriber emails available to copy.")
+return
+}
+
+const payload=emails.join(", ")
+
+try{
+if(navigator.clipboard && window.isSecureContext){
+await navigator.clipboard.writeText(payload)
+}else{
+const temp=document.createElement("textarea")
+temp.value=payload
+temp.setAttribute("readonly", "")
+temp.style.position="absolute"
+temp.style.left="-9999px"
+document.body.appendChild(temp)
+temp.select()
+document.execCommand("copy")
+document.body.removeChild(temp)
+}
+
+const copyBtn=document.getElementById("copyEmailsBtn")
+if(copyBtn){
+copyBtn.textContent="Copied"
+setTimeout(()=>setSubscriberActionsVisibility(), 1200)
+}
+}catch(_error){
+alert("Could not copy emails. Please try again.")
+}
+}
+
 function setActive(nav){
 document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"))
 nav.classList.add("active")
@@ -732,6 +840,7 @@ current="blogs"
 setActive(document.getElementById("blogNav"))
 document.getElementById("sectionTitle").innerText="Blogs"
 setAddVisibility()
+setSubscriberActionsVisibility()
 setMessagesView(true)
 
 authFetch(API+"/blogs/")
@@ -750,6 +859,7 @@ current="case-studies"
 setActive(document.getElementById("caseNav"))
 document.getElementById("sectionTitle").innerText="Case Studies"
 setAddVisibility()
+setSubscriberActionsVisibility()
 setMessagesView(false)
 
 authFetch(API+"/case-studies/")
@@ -765,9 +875,11 @@ setStatus("loginStatus", err.message || "Request failed", true)
 function loadSubscribers(){
 
 current="newsletter-subscribers"
+currentItems=[]
 setActive(document.getElementById("subsNav"))
 document.getElementById("sectionTitle").innerText="Subscribed Emails"
 setAddVisibility()
+setSubscriberActionsVisibility()
 setMessagesView(false)
 
 authFetch(API+"/newsletter/subscribers")
@@ -786,6 +898,7 @@ current="contact-messages"
 setActive(document.getElementById("msgNav"))
 document.getElementById("sectionTitle").innerText="Contact Messages"
 setAddVisibility()
+setSubscriberActionsVisibility()
 setMessagesView(true)
 
 authFetch(API+"/contact-messages/")
@@ -869,6 +982,26 @@ if(plain.length<=190) return plain
 return `${plain.slice(0, 190)}...`
 }
 
+function getStringHue(value){
+const text=String(value || "untagged")
+let hash=0
+
+for(let i=0;i<text.length;i++){
+hash=(hash<<5)-hash+text.charCodeAt(i)
+hash|=0
+}
+
+return Math.abs(hash)%360
+}
+
+function getTagStyle(tag){
+const hue=getStringHue(tag)
+const bg=`hsla(${hue}, 80%, 90%, 0.92)`
+const text=`hsl(${hue}, 64%, 28%)`
+const border=`hsla(${hue}, 62%, 45%, 0.35)`
+return `background:${bg};color:${text};border-color:${border};`
+}
+
 function buildBlogShareUrl(slug){
 const base=String(FRONTEND_URL || "").replace(/\/+$/, "")
 const cleanSlug=String(slug || "").trim()
@@ -930,6 +1063,16 @@ const createdAt=blog.updated_at || blog.created_at
 const dateLabel=createdAt ? new Date(createdAt).toLocaleDateString() : "No date"
 const category=blog.meta?.category || "General"
 const author=blog.meta?.author || "Unknown author"
+const rawTags=Array.isArray(blog.tags) ? blog.tags : []
+const tags=[...new Set(rawTags.map(tag=>String(tag || "").trim()).filter(Boolean))]
+const displayTags=(tags.length ? tags : [category]).slice(0, 5)
+const accentHue=getStringHue(displayTags[0] || blog.slug || blog.title || "general")
+const tagsMarkup=displayTags
+.map(tag=>`<span class="blog-tag" style="${getTagStyle(tag)}">${escapeHtml(tag)}</span>`)
+.join("")
+
+card.style.setProperty("--card-accent", `hsl(${accentHue} 75% 47%)`)
+card.style.setProperty("--card-tint", `hsl(${accentHue} 100% 98%)`)
 
 card.innerHTML=`
 <div class="blog-title">${escapeHtml(blog.title || "Untitled blog")}</div>
@@ -941,6 +1084,7 @@ card.innerHTML=`
 <span>•</span>
 <span>${escapeHtml(dateLabel)}</span>
 </div>
+<div class="blog-tags">${tagsMarkup}</div>
 <div class="blog-excerpt">${escapeHtml(excerpt)}</div>
 <div class="blog-actions">
 <button class="btn btn-edit" onclick="edit('${blog.id}')">Edit</button>
@@ -958,6 +1102,7 @@ container.appendChild(grid)
 function renderTable(data){
 
 currentItems=Array.isArray(data)?data:[]
+setSubscriberActionsVisibility()
 
 const head=document.getElementById("tableHead")
 const body=document.getElementById("tableBody")
