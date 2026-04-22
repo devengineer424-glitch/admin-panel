@@ -1703,6 +1703,10 @@ form.innerHTML=`
 <input name="meta_author" placeholder="Author">
 <input type="datetime-local" name="meta_date">
 <input name="meta_category" placeholder="Category">
+<input name="meta_intro_img" placeholder="Meta Intro Image URL">
+<input name="meta_current_landscape_img" placeholder="Meta Current Landscape Image URL">
+<input name="meta_my_perspective_img" placeholder="Meta My Perspective Image URL">
+<input name="meta_why_this_matters_img" placeholder="Meta Why This Matters Image URL">
 <textarea name="content" placeholder="Markdown Content"></textarea>
 <label class="field-label">Content Preview</label>
 <div id="contentPreview" class="preview-box"><em>Preview will appear here as you type markdown.</em></div>
@@ -1800,6 +1804,10 @@ setField("meta_date", localDate.toISOString().slice(0,16))
 }
 }
 setField("meta_category", existingData.meta?.category)
+setField("meta_intro_img", existingData.meta?.intro_img)
+setField("meta_current_landscape_img", existingData.meta?.current_landscape_img)
+setField("meta_my_perspective_img", existingData.meta?.my_perspective_img)
+setField("meta_why_this_matters_img", existingData.meta?.why_this_matters_img)
 setField("text_introduction", existingData.text_sections?.introduction)
 setField("text_current_landscape", existingData.text_sections?.current_landscape)
 setField("text_my_perspective", existingData.text_sections?.my_perspective)
@@ -1933,11 +1941,15 @@ badge: cleanValue(data.hero_badge),
 subtitle: cleanValue(data.hero_subtitle),
 image: cleanValue(data.hero_image)
 }),
-meta: compactObject({
+meta: {
 author: cleanValue(data.meta_author),
 date: metaDateRaw ? new Date(metaDateRaw).toISOString() : null,
-category: cleanValue(data.meta_category)
-}),
+category: cleanValue(data.meta_category),
+intro_img: cleanValue(data.meta_intro_img),
+current_landscape_img: cleanValue(data.meta_current_landscape_img),
+my_perspective_img: cleanValue(data.meta_my_perspective_img),
+why_this_matters_img: cleanValue(data.meta_why_this_matters_img)
+},
 text_sections: compactObject({
 introduction: cleanValue(data.text_introduction),
 current_landscape: cleanValue(data.text_current_landscape),
