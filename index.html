@@ -568,6 +568,10 @@ align-items:center;
 margin-bottom:8px;
 }
 
+.result-row.three{
+	grid-template-columns:1fr 1fr 1fr auto;
+}
+
 .field-label{
 font-size:13px;
 font-weight:600;
@@ -1346,13 +1350,13 @@ row.appendChild(removeBtn)
 container.appendChild(row)
 }
 
-function addBlogPairRow(containerId, firstClass, secondClass, firstPlaceholder, secondPlaceholder, firstValue="", secondValue=""){
+function addBlogPairRow(containerId, firstClass, secondClass, firstPlaceholder, secondPlaceholder, firstValue="", secondValue="", thirdClass, thirdPlaceholder, thirdValue=""){
 const container=document.getElementById(containerId)
 
 if(!container) return
 
 const row=document.createElement("div")
-row.className="result-row"
+row.className= thirdClass ? "result-row three" : "result-row"
 
 const firstInput=document.createElement("input")
 firstInput.type="text"
@@ -1366,6 +1370,15 @@ secondInput.className=secondClass
 secondInput.placeholder=secondPlaceholder
 secondInput.value=secondValue
 
+let thirdInput
+if(thirdClass){
+	thirdInput=document.createElement("input")
+	thirdInput.type="text"
+	thirdInput.className=thirdClass
+	thirdInput.placeholder=thirdPlaceholder
+	thirdInput.value=thirdValue || ""
+}
+
 const removeBtn=document.createElement("button")
 removeBtn.type="button"
 removeBtn.className="btn btn-danger btn-small"
@@ -1374,6 +1387,7 @@ removeBtn.addEventListener("click",()=>row.remove())
 
 row.appendChild(firstInput)
 row.appendChild(secondInput)
+if(thirdInput) row.appendChild(thirdInput)
 row.appendChild(removeBtn)
 
 container.appendChild(row)
@@ -1441,15 +1455,28 @@ row.appendChild(removeBtn)
 container.appendChild(row)
 }
 
-function getBlogPairRows(containerId, firstSelector, secondSelector, firstKey, secondKey){
-const rows=document.querySelectorAll(`#${containerId} .result-row`)
+function getBlogPairRows(containerId, firstSelector, secondSelector, firstKey, secondKey, thirdSelector, thirdKey){
+	const rows=document.querySelectorAll(`#${containerId} .result-row`)
 
-return Array.from(rows)
-.map(row=>({
-[firstKey]: (row.querySelector(`.${firstSelector}`)?.value || "").trim(),
-[secondKey]: (row.querySelector(`.${secondSelector}`)?.value || "").trim()
-}))
-.filter(item=>item[firstKey] || item[secondKey])
+	return Array.from(rows)
+	.map(row=>{
+		const obj={
+			[firstKey]: (row.querySelector(`.${firstSelector}`)?.value || "").trim(),
+			[secondKey]: (row.querySelector(`.${secondSelector}`)?.value || "").trim()
+		}
+
+		if(thirdSelector && thirdKey){
+			obj[thirdKey] = (row.querySelector(`.${thirdSelector}`)?.value || "").trim()
+		}
+
+		return obj
+	})
+	.filter(item=>{
+		if(thirdKey && Object.prototype.hasOwnProperty.call(item, thirdKey)){
+			return item[firstKey] || item[secondKey] || item[thirdKey]
+		}
+		return item[firstKey] || item[secondKey]
+	})
 }
 
 function validateRequiredBlogFields(values, status){
@@ -1482,7 +1509,8 @@ addStepBtn.addEventListener("click",()=>addBlogPairRow("stepsRows", "step-title"
 }
 
 if(addInfoCardBtn){
-addInfoCardBtn.addEventListener("click",()=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content"))
+	// Add info card row with third input for image URL (class "info-image")
+	addInfoCardBtn.addEventListener("click",()=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content", "", "", "info-image", "Image URL (optional)"))
 }
 
 if(addCtaButtonBtn){
@@ -1496,9 +1524,9 @@ addBlogPairRow("stepsRows", "step-title", "step-description", "Step title", "Ste
 }
 
 if(infoCards.length){
-infoCards.forEach(item=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content", item.title || "", item.content || ""))
+	infoCards.forEach(item=>addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content", item.title || "", item.content || "", "info-image", "Image URL (optional)", item.image || ""))
 }else{
-addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content")
+	addBlogPairRow("infoCardsRows", "info-title", "info-content", "Card title", "Card content", "", "", "info-image", "Image URL (optional)")
 }
 
 if(ctaButtons.length){
@@ -1927,7 +1955,7 @@ return entries.length ? Object.fromEntries(entries) : null
 
 try{
 const steps=getBlogPairRows("stepsRows", "step-title", "step-description", "title", "description")
-const infoCards=getBlogPairRows("infoCardsRows", "info-title", "info-content", "title", "content")
+const infoCards=getBlogPairRows("infoCardsRows", "info-title", "info-content", "title", "content", "info-image", "image")
 const ctaButtons=getBlogPairRows("ctaButtonsRows", "cta-btn-text", "cta-btn-action", "text", "action")
 const metaDateRaw=cleanValue(data.meta_date)
 
