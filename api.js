@@ -325,6 +325,50 @@ async function save(event) {
       editedSectionTypes.add("results");
     }
 
+    // Features section
+    try {
+      if (typeof getFeaturesFromRows === "function") {
+        const features = getFeaturesFromRows();
+        if (features && Array.isArray(features) && features.length) {
+          newSections.push({ type: "features", data: features });
+          editedSectionTypes.add("features");
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to read features data", err);
+      status.innerHTML = "<span class='error'>Invalid Features data</span>";
+      return;
+    }
+
+    // Metrics section
+    try {
+      const mTitle = cleanValue(data.metrics_title);
+      const mSubtitle = cleanValue(data.metrics_subtitle);
+      const mDescription = cleanValue(data.metrics_description);
+      if (mTitle || mSubtitle || mDescription || (typeof getMetricsFromRows === "function" && getMetricsFromRows().length)) {
+        const metricsItems = (typeof getMetricsFromRows === "function") ? getMetricsFromRows() : [];
+        const metricsData = {
+          title: mTitle || "",
+          subtitle: mSubtitle || null,
+          description: mDescription || null,
+          metrics: metricsItems,
+        };
+        // optional testimonial may have been captured earlier
+        if (data.testimonial_quote || data.testimonial_author) {
+          metricsData.testimonial = {
+            quote: cleanValue(data.testimonial_quote),
+            author: cleanValue(data.testimonial_author),
+          };
+        }
+        newSections.push({ type: "metrics", data: metricsData });
+        editedSectionTypes.add("metrics");
+      }
+    } catch (err) {
+      console.warn("Failed to read metrics data", err);
+      status.innerHTML = "<span class='error'>Invalid Metrics data</span>";
+      return;
+    }
+
     // Tech Stack section
     const parseCommaSeparated = (str) => {
       if (!str) return [];
@@ -356,6 +400,23 @@ async function save(event) {
         },
       });
       editedSectionTypes.add("cta");
+    }
+
+    // Table section (friendly table editor)
+    try {
+      if (typeof getTableEditorData === "function") {
+        const tableData = getTableEditorData();
+        if (tableData && Array.isArray(tableData.columns) && tableData.columns.length) {
+          // include title from simple input if present
+          const tablePayload = Object.assign({ title: cleanValue(data.table_title) || "" }, tableData);
+          newSections.push({ type: "table", data: tablePayload });
+          editedSectionTypes.add("table");
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to read table editor data", err);
+      status.innerHTML = "<span class='error'>Invalid Table data</span>";
+      return;
     }
 
     // Preserve sections that aren't being edited (features, table, metrics, etc.)

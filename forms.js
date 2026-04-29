@@ -262,3 +262,252 @@ function initTagEditor(tags = []) {
 
   input.addEventListener("blur", commitInputTags);
 }
+
+// ------------------ Table Editor Helpers ------------------
+let __tableColumnCounter = 0;
+
+function _ensureTableContainers() {
+  return {
+    cols: document.getElementById("tableColumns"),
+    rows: document.getElementById("tableRows"),
+  };
+}
+
+function addTableColumn(key = "", label = "") {
+  const { cols, rows } = _ensureTableContainers();
+  if (!cols || !rows) return;
+
+  __tableColumnCounter += 1;
+  const colId = `col_${Date.now()}_${__tableColumnCounter}`;
+
+  const colDiv = document.createElement("div");
+  colDiv.className = "table-column";
+  colDiv.dataset.colId = colId;
+
+  const keyInput = document.createElement("input");
+  keyInput.type = "text";
+  keyInput.className = "table-col-key";
+  keyInput.placeholder = "key (internal)";
+  keyInput.value = key;
+
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.className = "table-col-label";
+  labelInput.placeholder = "Label (visible)";
+  labelInput.value = label;
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => {
+    // remove column node
+    colDiv.remove();
+    // remove corresponding cell inputs from each row
+    Array.from(rows.querySelectorAll('.table-row')).forEach((r) => {
+      const cell = r.querySelector(`[data-col-id="${colId}"]`);
+      if (cell) cell.remove();
+    });
+  });
+
+  colDiv.appendChild(labelInput);
+  colDiv.appendChild(keyInput);
+  colDiv.appendChild(removeBtn);
+
+  cols.appendChild(colDiv);
+
+  // add empty cell for existing rows
+  Array.from(rows.querySelectorAll('.table-row')).forEach((r) => {
+    const cellInput = document.createElement("input");
+    cellInput.type = "text";
+    cellInput.className = "table-cell";
+    cellInput.dataset.colId = colId;
+    cellInput.placeholder = label || key || "";
+    r.appendChild(cellInput);
+  });
+}
+
+function addTableRow(cellValues = {}) {
+  const { cols, rows } = _ensureTableContainers();
+  if (!cols || !rows) return;
+
+  const rowDiv = document.createElement("div");
+  rowDiv.className = "table-row";
+
+  // create cells based on columns order
+  Array.from(cols.querySelectorAll('.table-column')).forEach((col) => {
+    const colId = col.dataset.colId;
+    const key = (col.querySelector('.table-col-key')?.value || '').trim();
+    const label = (col.querySelector('.table-col-label')?.value || '').trim();
+
+    const cellInput = document.createElement("input");
+    cellInput.type = "text";
+    cellInput.className = "table-cell";
+    cellInput.dataset.colId = colId;
+    cellInput.placeholder = label || key || "";
+    const provided = cellValues[key];
+    if (provided && typeof provided === 'object') {
+      cellInput.value = provided.value || "";
+    } else if (provided !== undefined) {
+      cellInput.value = String(provided);
+    }
+
+    rowDiv.appendChild(cellInput);
+  });
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => rowDiv.remove());
+
+  rowDiv.appendChild(removeBtn);
+  rows.appendChild(rowDiv);
+}
+
+function populateTableEditor(data) {
+  const { cols, rows } = _ensureTableContainers();
+  if (!cols || !rows) return;
+
+  cols.innerHTML = "";
+  rows.innerHTML = "";
+
+  const columns = Array.isArray(data.columns) ? data.columns : [];
+  const tableRows = Array.isArray(data.rows) ? data.rows : [];
+
+  // add columns
+  columns.forEach((c) => {
+    addTableColumn(c.key || '', c.label || '');
+  });
+
+  // add rows
+  tableRows.forEach((r) => {
+    // r is an object mapping key -> {value,color}
+    const simple = {};
+    Object.keys(r || {}).forEach((k) => {
+      const v = r[k];
+      if (v && typeof v === 'object') simple[k] = { value: v.value || '' };
+      else simple[k] = String(v || '');
+    });
+    addTableRow(simple);
+  });
+}
+
+function getTableEditorData() {
+  const { cols, rows } = _ensureTableContainers();
+  if (!cols || !rows) return null;
+
+  const columns = Array.from(cols.querySelectorAll('.table-column')).map((col) => {
+    const keyRaw = (col.querySelector('.table-col-key')?.value || '').trim();
+    const label = (col.querySelector('.table-col-label')?.value || '').trim();
+    const key = keyRaw || label.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `col_${Math.random().toString(36).slice(2,7)}`;
+    return { key, label };
+  });
+
+  const rowsData = Array.from(rows.querySelectorAll('.table-row')).map((r) => {
+    const obj = {};
+    Array.from(r.querySelectorAll('.table-cell')).forEach((cell, idx) => {
+      const col = columns[idx];
+      const key = col ? col.key : `col_${idx}`;
+      const value = (cell.value || '').trim();
+      obj[key] = { value, color: '#ffffff' };
+    });
+    return obj;
+  });
+
+  return { columns, rows: rowsData };
+}
+
+// ------------------ Features Helpers ------------------
+function addFeatureRow(title = "", description = "", icon = "") {
+  const container = document.getElementById("featuresRows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "result-row three";
+
+  const iconInput = document.createElement("input");
+  iconInput.type = "text";
+  iconInput.className = "feature-icon";
+  iconInput.placeholder = "Icon/Emoji (optional)";
+  iconInput.value = icon || "";
+
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.className = "feature-title";
+  titleInput.placeholder = "Feature Title";
+  titleInput.value = title || "";
+
+  const descInput = document.createElement("input");
+  descInput.type = "text";
+  descInput.className = "feature-desc";
+  descInput.placeholder = "Feature short description";
+  descInput.value = description || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(iconInput);
+  row.appendChild(titleInput);
+  row.appendChild(descInput);
+  row.appendChild(removeBtn);
+
+  container.appendChild(row);
+}
+
+function getFeaturesFromRows() {
+  const rows = document.querySelectorAll("#featuresRows .result-row");
+  return Array.from(rows)
+    .map((row) => ({
+      icon: (row.querySelector(".feature-icon")?.value || "").trim(),
+      title: (row.querySelector(".feature-title")?.value || "").trim(),
+      description: (row.querySelector(".feature-desc")?.value || "").trim(),
+    }))
+    .filter((f) => f.title || f.description);
+}
+
+// ------------------ Metrics Helpers ------------------
+function addMetricRow(icon = "", label = "") {
+  const container = document.getElementById("metricsRows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "result-row two";
+
+  const iconInput = document.createElement("input");
+  iconInput.type = "text";
+  iconInput.className = "metric-icon";
+  iconInput.placeholder = "Icon/Emoji (optional)";
+  iconInput.value = icon || "";
+
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.className = "metric-label";
+  labelInput.placeholder = "Metric label (e.g. Conversion Rate)";
+  labelInput.value = label || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(iconInput);
+  row.appendChild(labelInput);
+  row.appendChild(removeBtn);
+
+  container.appendChild(row);
+}
+
+function getMetricsFromRows() {
+  const rows = document.querySelectorAll("#metricsRows .result-row");
+  return Array.from(rows)
+    .map((row) => ({
+      icon: (row.querySelector(".metric-icon")?.value || "").trim(),
+      label: (row.querySelector(".metric-label")?.value || "").trim(),
+    }))
+    .filter((m) => m.label);
+}

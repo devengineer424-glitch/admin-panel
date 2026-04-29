@@ -107,6 +107,25 @@ function openCreate(existingData = null) {
       <div id="goalsRows"></div>
     </fieldset>
 
+    <!-- TABLE SECTION (friendly editor) -->
+    <fieldset>
+      <legend>📋 Table</legend>
+      <label class="field-label">Table Title</label>
+      <input name="table_title" placeholder="Table title">
+      <div class="results-header">
+        <span class="results-title">Columns</span>
+        <button type="button" class="btn btn-primary btn-small" id="addTableColumnBtn">Add Column</button>
+      </div>
+      <div id="tableColumns"></div>
+
+      <div class="results-header" style="margin-top:10px;">
+        <span class="results-title">Rows</span>
+        <button type="button" class="btn btn-primary btn-small" id="addTableRowBtn">Add Row</button>
+      </div>
+      <div id="tableRows"></div>
+      <div class="help-text">Use the controls to add/remove columns and rows. Cells are simple text values.</div>
+    </fieldset>
+
     <!-- CHALLENGE SECTION -->
     <fieldset>
       <legend>⚡ Challenge</legend>
@@ -125,6 +144,16 @@ function openCreate(existingData = null) {
         <button type="button" class="btn btn-primary btn-small" id="addApproachBtn">Add Step</button>
       </div>
       <div id="approachRows"></div>
+    </fieldset>
+
+    <!-- FEATURES SECTION -->
+    <fieldset>
+      <legend>✨ Features</legend>
+      <div class="results-header">
+        <span class="results-title">Feature Items</span>
+        <button type="button" class="btn btn-primary btn-small" id="addFeatureBtn">Add Feature</button>
+      </div>
+      <div id="featuresRows"></div>
     </fieldset>
 
     <!-- BENEFITS SECTION -->
@@ -155,6 +184,20 @@ function openCreate(existingData = null) {
         <button type="button" class="btn btn-primary btn-small" id="addResultBtn">Add Result</button>
       </div>
       <div id="resultsRows"></div>
+    </fieldset>
+
+    <!-- METRICS SECTION -->
+    <fieldset>
+      <legend>📈 Metrics</legend>
+      <input name="metrics_title" placeholder="Metrics title (e.g. Key Metrics)">
+      <input name="metrics_subtitle" placeholder="Metrics subtitle (optional)">
+      <textarea name="metrics_description" placeholder="Metrics description (optional)"></textarea>
+      <div class="results-header">
+        <span class="results-title">Metric Items</span>
+        <button type="button" class="btn btn-primary btn-small" id="addMetricBtn">Add Metric</button>
+      </div>
+      <div id="metricsRows"></div>
+      <div class="help-text">Each metric is a small highlighted item with optional icon and label.</div>
     </fieldset>
 
     <!-- TECH STACK SECTION -->
@@ -193,6 +236,16 @@ function openCreate(existingData = null) {
     document.getElementById("addResultBtn").addEventListener("click", () =>
       addResultRow()
     );
+
+    document.getElementById("addFeatureBtn").addEventListener("click", () =>
+      addFeatureRow()
+    );
+
+    document.getElementById("addMetricBtn").addEventListener("click", () => addMetricRow());
+
+    // Table editor controls (friendly UI)
+    document.getElementById("addTableColumnBtn").addEventListener("click", () => addTableColumn());
+    document.getElementById("addTableRowBtn").addEventListener("click", () => addTableRow());
 
     setupCaseStudyFormHandlers();
   }
@@ -304,6 +357,15 @@ function openCreate(existingData = null) {
               );
             });
           }
+        } else if (type === "table" && data) {
+          // populate friendly table editor
+          setField("table_title", data.title || "");
+          try {
+            populateTableEditor(data);
+          } catch (e) {
+            // fallback: clear editor on error
+            console.warn("Failed to populate table editor:", e);
+          }
         } else if (type === "challenge" && data) {
           setField("challenge_title", data.title);
           setField("challenge_subtitle", data.subtitle);
@@ -316,6 +378,16 @@ function openCreate(existingData = null) {
               addBlogPairRow("approachRows", "approach-step", "approach-desc", "Step", "Description", step, "");
             });
           }
+        } else if (type === "features" && data) {
+          // Features may be stored as an array of feature objects or an object with `features` array
+          const featureList = Array.isArray(data) ? data : Array.isArray(data.features) ? data.features : [];
+          featureList.forEach((f) => {
+            if (f && typeof f === 'object') {
+              addFeatureRow(f.title || '', f.description || '', f.icon || '');
+            } else if (typeof f === 'string') {
+              addFeatureRow(f, '');
+            }
+          });
         } else if (type === "benefits" && data) {
           setField("benefits_title", data.title);
           setField("benefits_subtitle", data.subtitle);
@@ -339,10 +411,24 @@ function openCreate(existingData = null) {
         } else if (type === "testimonial" && data) {
           setField("testimonial_quote", data.quote);
           setField("testimonial_author", data.author);
+        } else if (type === "metrics" && data) {
+          // populate metrics section
+          setField("metrics_title", data.title || "");
+          setField("metrics_subtitle", data.subtitle || "");
+          setField("metrics_description", data.description || "");
+          if (Array.isArray(data.metrics)) {
+            data.metrics.forEach((m) => {
+              addMetricRow(m.icon || "", m.label || "");
+            });
+          }
+          if (data.testimonial) {
+            setField("testimonial_quote", data.testimonial.quote || "");
+            setField("testimonial_author", data.testimonial.author || "");
+          }
         } else if (type === "results" && data) {
           if (Array.isArray(data.qualitative)) {
             data.qualitative.forEach((result) => {
-              addResultRow(result, "");
+              addResultRow(result.metric || "", result.value || "");
             });
           }
         } else if (type === "tech_stack" && data) {
