@@ -81,9 +81,23 @@
 
 </div>
 
-<!-- constants.js MUST be loaded before script.js -->
+<!-- Load modules in order: constants first, then auth/api/utils/ui, then features, then main -->
 <script src="constants.js"></script>
-<script src="script.js"></script>
+
+<!-- Core modules -->
+<script src="auth.js"></script>
+<script src="api.js"></script>
+<script src="utils.js"></script>
+<script src="ui.js"></script>
+<script src="forms.js"></script>
+
+<!-- Feature modules -->
+<script src="blogs.js"></script>
+<script src="subscribers.js"></script>
+<script src="caseStudies.js"></script>
+
+<!-- Main entry point -->
+<script src="main.js"></script>
 
 </body>
 </html>
