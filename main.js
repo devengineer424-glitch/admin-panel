@@ -234,7 +234,13 @@ function openCreate(existingData = null) {
       <input name="cta_title" placeholder="CTA Title">
       <textarea name="cta_description" placeholder="CTA Description"></textarea>
       <input name="cta_button_text" placeholder="Button Text">
-      <input name="cta_button_link" placeholder="Button Link (URL)">
+      <select name="cta_button_link">
+        <option value="">Select Link</option>
+        <option value="/contact">Contact Page</option>
+        <option value="/case-studies">Case Studies</option>
+        <option value="/blogs">Blogs</option>
+        <option value="/about">About</option>
+      </select>
     </fieldset>
     `;
 
@@ -472,7 +478,10 @@ function openCreate(existingData = null) {
           setField("cta_title", data.title);
           setField("cta_description", data.description);
           setField("cta_button_text", data.button_text);
-          setField("cta_button_link", data.button_link);
+          const linkField = form.querySelector("[name='cta_button_link']");
+          if (linkField) {
+            linkField.value = data.button_link || "";
+          }
         }
       });
     }
