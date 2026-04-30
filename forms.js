@@ -546,3 +546,42 @@ function getMetricsFromRows() {
     }))
     .filter((m) => m.label);
 }
+
+
+
+
+function addSnapshotRow(label = "", value = "", icon = "★") {
+  const container = document.getElementById("snapshotRows");
+
+  const row = document.createElement("div");
+  row.className = "result-row three";
+
+  row.innerHTML = `
+    <input class="snap-label" placeholder="Label" value="${label}">
+    <input class="snap-value" placeholder="Value" value="${value}">
+    <input class="snap-icon" placeholder="Icon" value="${icon}">
+    <button type="button" class="btn btn-danger btn-small">Remove</button>
+  `;
+
+  row.querySelector("button").onclick = () => row.remove();
+
+  container.appendChild(row);
+}
+
+function addTechCard(title = "", desc = "", icon = "⚙️") {
+  const container = document.getElementById("techCards");
+
+  const row = document.createElement("div");
+  row.className = "result-row three";
+
+  row.innerHTML = `
+    <input class="tech-title" placeholder="Title" value="${title}">
+    <input class="tech-desc" placeholder="Description" value="${desc}">
+    <input class="tech-icon" placeholder="Icon" value="${icon}">
+    <button type="button" class="btn btn-danger btn-small">Remove</button>
+  `;
+
+  row.querySelector("button").onclick = () => row.remove();
+
+  container.appendChild(row);
+}

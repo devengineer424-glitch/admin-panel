@@ -107,6 +107,64 @@ function openCreate(existingData = null) {
       <div id="goalsRows"></div>
     </fieldset>
 
+    <!-- SNAPSHOT STRIP -->
+    <fieldset>
+      <legend>📊 Snapshot Strip</legend>
+      <div id="snapshotRows"></div>
+      <button type="button" class="btn btn-primary btn-small" onclick="addSnapshotRow()">Add Item</button>
+    </fieldset>
+    
+    <!-- ABOUT -->
+    <fieldset>
+      <legend>📖 About Section</legend>
+      <input name="about_label" placeholder="Label (e.g. About GeoStats)">
+      <input name="about_title" placeholder="Title">
+      <textarea name="about_paragraphs" placeholder="Paragraphs (one per line)"></textarea>
+      <input name="about_image" placeholder="Image URL">
+    </fieldset>
+    
+    <!-- CHALLENGE V2 -->
+    <fieldset>
+      <legend>⚠️ Challenge (Design 2)</legend>
+      <input name="challenge_v2_title" placeholder="Title">
+      <textarea name="challenge_v2_paragraphs" placeholder="Paragraphs"></textarea>
+      <input name="challenge_v2_image" placeholder="Image URL">
+    </fieldset>
+    
+    <!-- SOLUTION V2 -->
+    <fieldset>
+      <legend>💡 Solution</legend>
+      <input name="solution_v2_title" placeholder="Title">
+      <textarea name="solution_v2_paragraphs" placeholder="Paragraphs"></textarea>
+      <input name="solution_v2_images" placeholder="Images (comma separated)">
+    </fieldset>
+    
+    <!-- WHAT WE BUILT -->
+    <fieldset>
+      <legend>🛠 What We Built</legend>
+      <input name="what_we_built_title" placeholder="Title">
+      <textarea name="what_we_built_paragraphs" placeholder="Paragraphs"></textarea>
+      <input name="what_we_built_images" placeholder="Images (comma separated)">
+    </fieldset>
+    
+    <!-- TECHNOLOGY -->
+    <fieldset>
+      <legend>⚙️ Technology</legend>
+      <input name="technology_title" placeholder="Title">
+      <textarea name="technology_paragraphs" placeholder="Paragraphs"></textarea>
+      <div id="techCards"></div>
+      <button type="button" onclick="addTechCard()">Add Card</button>
+    </fieldset>
+    
+    <!-- FINAL CTA V2 -->
+    <fieldset>
+      <legend>🚀 Final CTA</legend>
+      <input name="cta_v2_title" placeholder="Title">
+      <textarea name="cta_v2_desc" placeholder="Description"></textarea>
+      <input name="cta_v2_text" placeholder="Button Text">
+      <select name="cta_v2_link"></select>
+    </fieldset>
+
     <!-- TABLE SECTION (friendly editor) -->
     <fieldset>
       <legend>📋 Table</legend>
@@ -483,6 +541,72 @@ function openCreate(existingData = null) {
             linkField.value = data.button_link || "";
           }
         }
+
+        // ==========================
+        // DESIGN 2 EDIT SUPPORT
+        // ==========================
+        
+        // SNAPSHOT STRIP
+        else if (type === "snapshot_strip" && data) {
+          if (Array.isArray(data.items)) {
+            data.items.forEach(item => {
+              addSnapshotRow(item.label || "", item.value || "", item.icon || "");
+            });
+          }
+        }
+        
+        // ABOUT
+        else if (type === "about" && data) {
+          setField("about_label", data.label);
+          setField("about_title", data.title);
+          setField("about_paragraphs", (data.paragraphs || []).join("\n"));
+          setField("about_image", data.image);
+        }
+        
+        // CHALLENGE V2
+        else if (type === "challenge_v2" && data) {
+          setField("challenge_v2_title", data.title);
+          setField("challenge_v2_paragraphs", (data.paragraphs || []).join("\n"));
+          setField("challenge_v2_image", data.image);
+        }
+        
+        // SOLUTION V2
+        else if (type === "solution_v2" && data) {
+          setField("solution_v2_title", data.title);
+          setField("solution_v2_paragraphs", (data.paragraphs || []).join("\n"));
+          setField("solution_v2_images", (data.images || []).join(", "));
+        }
+        
+        // WHAT WE BUILT
+        else if (type === "what_we_built" && data) {
+          setField("what_we_built_title", data.title);
+          setField("what_we_built_paragraphs", (data.paragraphs || []).join("\n"));
+          setField("what_we_built_images", (data.images || []).join(", "));
+        }
+        
+        // TECHNOLOGY
+        else if (type === "technology" && data) {
+          setField("technology_title", data.title);
+          setField("technology_paragraphs", (data.paragraphs || []).join("\n"));
+        
+          if (Array.isArray(data.cards)) {
+            data.cards.forEach(card => {
+              addTechCard(card.title || "", card.desc || "", card.icon || "");
+            });
+          }
+        }
+        
+        // FINAL CTA V2
+        else if (type === "final_cta_v2" && data) {
+          setField("cta_v2_title", data.title);
+          setField("cta_v2_desc", data.description);
+          setField("cta_v2_text", data.button?.text);
+          setField("cta_v2_link", data.button?.href);
+        }
+
+
+
+
       });
     }
   } else if (current === "case-studies") {

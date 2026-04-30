@@ -413,6 +413,114 @@ async function save(event) {
       editedSectionTypes.add("tech_stack");
     }
 
+    // ==========================
+    // DESIGN 2 SECTIONS START
+    // ==========================
+    
+    // SNAPSHOT STRIP
+    const snapshotItems = Array.from(document.querySelectorAll("#snapshotRows .result-row"))
+      .map(r => ({
+        label: r.querySelector(".snap-label")?.value,
+        value: r.querySelector(".snap-value")?.value,
+        icon: r.querySelector(".snap-icon")?.value
+      }));
+    
+    if (snapshotItems.length) {
+      newSections.push({
+        type: "snapshot_strip",
+        data: { items: snapshotItems }
+      });
+    }
+    
+    
+    // ABOUT
+    if (data.about_title || data.about_paragraphs || data.about_image) {
+      newSections.push({
+        type: "about",
+        data: {
+          label: cleanValue(data.about_label),
+          title: cleanValue(data.about_title),
+          paragraphs: data.about_paragraphs?.split("\n"),
+          image: cleanValue(data.about_image)
+        }
+      });
+    }
+    
+    
+    // CHALLENGE V2
+    if (data.challenge_v2_title || data.challenge_v2_paragraphs) {
+      newSections.push({
+        type: "challenge_v2",
+        data: {
+          title: cleanValue(data.challenge_v2_title),
+          paragraphs: data.challenge_v2_paragraphs?.split("\n"),
+          image: cleanValue(data.challenge_v2_image)
+        }
+      });
+    }
+    
+    
+    // SOLUTION V2
+    if (data.solution_v2_title || data.solution_v2_paragraphs) {
+      newSections.push({
+        type: "solution_v2",
+        data: {
+          title: cleanValue(data.solution_v2_title),
+          paragraphs: data.solution_v2_paragraphs?.split("\n"),
+          images: data.solution_v2_images?.split(",").map(i => i.trim())
+        }
+      });
+    }
+    
+    
+    // WHAT WE BUILT
+    if (data.what_we_built_title || data.what_we_built_paragraphs) {
+      newSections.push({
+        type: "what_we_built",
+        data: {
+          title: cleanValue(data.what_we_built_title),
+          paragraphs: data.what_we_built_paragraphs?.split("\n"),
+          images: data.what_we_built_images?.split(",").map(i => i.trim())
+        }
+      });
+    }
+    
+    
+    // TECHNOLOGY
+    const techCards = Array.from(document.querySelectorAll("#techCards .result-row"))
+      .map(r => ({
+        title: r.querySelector(".tech-title")?.value,
+        desc: r.querySelector(".tech-desc")?.value,
+        icon: r.querySelector(".tech-icon")?.value
+      }));
+    
+    if (data.technology_title || techCards.length) {
+      newSections.push({
+        type: "technology",
+        data: {
+          title: cleanValue(data.technology_title),
+          paragraphs: data.technology_paragraphs?.split("\n"),
+          cards: techCards
+        }
+      });
+    }
+    
+    
+    // FINAL CTA V2
+    if (data.cta_v2_title || data.cta_v2_desc) {
+      newSections.push({
+        type: "final_cta_v2",
+        data: {
+          title: cleanValue(data.cta_v2_title),
+          description: cleanValue(data.cta_v2_desc),
+          button: {
+            text: cleanValue(data.cta_v2_text),
+            href: cleanValue(data.cta_v2_link)
+          }
+        }
+      });
+    }
+
     // CTA section
     if (data.cta_title || data.cta_description || data.cta_button_text || data.cta_button_link) {
       newSections.push({
