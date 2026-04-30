@@ -236,7 +236,7 @@ function openCreate(existingData = null) {
       <input name="cta_button_text" placeholder="Button Text">
       <select name="cta_button_link">
         <option value="">Select Link</option>
-        <option value="/contact">Contact Page</option>
+        <option value="/contact-us">Contact Page</option>
         <option value="/case-studies">Case Studies</option>
         <option value="/blogs">Blogs</option>
         <option value="/about">About</option>
