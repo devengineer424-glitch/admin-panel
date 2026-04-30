@@ -137,7 +137,7 @@ function openCreate(existingData = null) {
       <input name="solution_v2_title" placeholder="Title">
       <textarea name="solution_v2_paragraphs" placeholder="Paragraphs"></textarea>
       <div id="solutionImagesRows"></div>
-      <button type="button" onclick="addBlogPairRow('solutionImagesRows','img-url','dummy','','','')">
+      <button type="button" onclick="addSolutionImageRow()">
         Add Image
       </button>
     </fieldset>
@@ -147,7 +147,8 @@ function openCreate(existingData = null) {
       <legend>🛠 What We Built</legend>
       <input name="what_we_built_title" placeholder="Title">
       <textarea name="what_we_built_paragraphs" placeholder="Paragraphs"></textarea>
-      <input name="what_we_built_images" placeholder="Images (comma separated)">
+      <div id="whatWeBuiltImagesRows"></div>
+      <button type="button" onclick="addWhatWeBuiltImageRow()">Add Image</button>
     </fieldset>
     
     <!-- TECHNOLOGY -->
@@ -333,6 +334,28 @@ function openCreate(existingData = null) {
     document.getElementById("addTableRowBtn").addEventListener("click", () => addTableRow());
 
     setupCaseStudyFormHandlers();
+    // Populate Final CTA link select (`cta_v2_link`) with available options
+    try {
+      const finalCtaSelect = form.querySelector("select[name='cta_v2_link']");
+      if (finalCtaSelect) {
+        // clear existing
+        finalCtaSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Select Link";
+        finalCtaSelect.appendChild(placeholder);
+        if (Array.isArray(CTA_ACTION_OPTIONS)) {
+          CTA_ACTION_OPTIONS.forEach((opt) => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            finalCtaSelect.appendChild(o);
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to populate final CTA options", e);
+    }
   }
 
   if (existingData) {
@@ -419,6 +442,12 @@ function openCreate(existingData = null) {
       // 🧹 CLEAR OLD DYNAMIC ROWS (IMPORTANT)
       document.getElementById("snapshotRows").innerHTML = "";
       document.getElementById("techCards").innerHTML = "";
+      // clear solution images rows container so we don't duplicate entries
+      const solImagesContainer = document.getElementById("solutionImagesRows");
+      if (solImagesContainer) solImagesContainer.innerHTML = "";
+      // clear what we built images rows
+      const whatBuiltContainer = document.getElementById("whatWeBuiltImagesRows");
+      if (whatBuiltContainer) whatBuiltContainer.innerHTML = "";
       
       sections.forEach((section) => {
         const type = section?.type || "";
@@ -581,14 +610,21 @@ function openCreate(existingData = null) {
         else if (type === "solution_v2" && data) {
           setField("solution_v2_title", data.title);
           setField("solution_v2_paragraphs", (data.paragraphs || []).join("\n"));
-          setField("solution_v2_images", (data.images || []).join(", "));
+          // Populate solution images into the friendly editor rows (one per image)
+          if (Array.isArray(data.images) && data.images.length) {
+            data.images.forEach((img) => {
+              addSolutionImageRow(img);
+            });
+          }
         }
         
         // WHAT WE BUILT
         else if (type === "what_we_built" && data) {
           setField("what_we_built_title", data.title);
           setField("what_we_built_paragraphs", (data.paragraphs || []).join("\n"));
-          setField("what_we_built_images", (data.images || []).join(", "));
+          if (Array.isArray(data.images) && data.images.length) {
+            data.images.forEach((img) => addWhatWeBuiltImageRow(img));
+          }
         }
         
         // TECHNOLOGY

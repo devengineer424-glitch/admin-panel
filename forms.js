@@ -89,6 +89,30 @@ function addBlogPairRow(
   container.appendChild(row);
 }
 
+function addSolutionImageRow(url = "") {
+  const container = document.getElementById("solutionImagesRows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "result-row";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "solution-image-url";
+  input.placeholder = "Image URL";
+  input.value = url || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+}
+
 function addCtaButtonRow(textValue = "", actionValue = "") {
   const container = document.getElementById("ctaButtonsRows");
 
@@ -583,5 +607,29 @@ function addTechCard(title = "", desc = "", icon = "⚙️") {
 
   row.querySelector("button").onclick = () => row.remove();
 
+  container.appendChild(row);
+}
+
+function addWhatWeBuiltImageRow(url = "") {
+  const container = document.getElementById("whatWeBuiltImagesRows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "result-row";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "what-built-image-url";
+  input.placeholder = "Image URL";
+  input.value = url || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "btn btn-danger btn-small";
+  removeBtn.textContent = "Remove";
+  removeBtn.addEventListener("click", () => row.remove());
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
   container.appendChild(row);
 }

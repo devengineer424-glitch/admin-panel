@@ -395,19 +395,21 @@ async function save(event) {
     }
 
     // Tech Stack section
-    const parseCommaSeparated = (str) => {
+    // Accept comma, semicolon or newline separated values so non-technical admins
+    // can add items one-per-line or comma-separated.
+    const splitList = (str) => {
       if (!str) return [];
-      return str.split(",").map(s => s.trim()).filter(s => s);
+      return String(str).split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
     };
     if (data.tech_backend || data.tech_frontend || data.tech_ai_ml || data.tech_database || data.tech_infra) {
       newSections.push({
         type: "tech_stack",
         data: {
-          backend: parseCommaSeparated(data.tech_backend),
-          frontend: parseCommaSeparated(data.tech_frontend),
-          ai_ml: parseCommaSeparated(data.tech_ai_ml),
-          database: parseCommaSeparated(data.tech_database),
-          infra: parseCommaSeparated(data.tech_infra),
+          backend: splitList(data.tech_backend),
+          frontend: splitList(data.tech_frontend),
+          ai_ml: splitList(data.tech_ai_ml),
+          database: splitList(data.tech_database),
+          infra: splitList(data.tech_infra),
         },
       });
       editedSectionTypes.add("tech_stack");
@@ -463,18 +465,16 @@ async function save(event) {
     
     // SOLUTION V2
     if (data.solution_v2_title || data.solution_v2_paragraphs) {
+      // read single-image inputs (.solution-image-url) from the friendly editor
+      const solutionImageInputs = Array.from(document.querySelectorAll("#solutionImagesRows .solution-image-url"));
+      const solutionImages = solutionImageInputs.map(i => (i.value || "").trim()).filter(Boolean);
+
       newSections.push({
         type: "solution_v2",
         data: {
           title: cleanValue(data.solution_v2_title),
           paragraphs: data.solution_v2_paragraphs?.split("\n"),
-          images: getBlogPairRows(
-            "solutionImagesRows",
-            "img-url",
-            "dummy",
-            "url",
-            "dummy"
-          ).map(i => i.url)
+          images: solutionImages
         }
       });
     }
@@ -482,12 +482,16 @@ async function save(event) {
     
     // WHAT WE BUILT
     if (data.what_we_built_title || data.what_we_built_paragraphs) {
+      // read single-image inputs for What We Built
+      const whatBuiltInputs = Array.from(document.querySelectorAll("#whatWeBuiltImagesRows .what-built-image-url"));
+      const whatBuiltImages = whatBuiltInputs.map(i => (i.value || "").trim()).filter(Boolean);
+
       newSections.push({
         type: "what_we_built",
         data: {
           title: cleanValue(data.what_we_built_title),
           paragraphs: data.what_we_built_paragraphs?.split("\n"),
-          images: data.what_we_built_images?.split(",").map(i => i.trim())
+          images: whatBuiltImages
         }
       });
     }
@@ -510,6 +514,8 @@ async function save(event) {
           cards: techCards
         }
       });
+      // mark as edited so existing technology sections are not preserved and duplicated
+      editedSectionTypes.add("technology");
     }
     
     
@@ -583,6 +589,18 @@ async function save(event) {
       tags: data.tags,
       sections: newSections,
     };
+
+    // Deduplicate sections by type to avoid accidental duplicates
+    if (Array.isArray(data.sections) && data.sections.length) {
+      const seen = new Set();
+      data.sections = data.sections.filter((s) => {
+        const t = s && s.type ? String(s.type) : "";
+        if (!t) return true;
+        if (seen.has(t)) return false;
+        seen.add(t);
+        return true;
+      });
+    }
   }
 
   const slug = (data.slug || "").trim().toLowerCase();
