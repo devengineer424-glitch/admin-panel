@@ -136,7 +136,10 @@ function openCreate(existingData = null) {
       <legend>💡 Solution</legend>
       <input name="solution_v2_title" placeholder="Title">
       <textarea name="solution_v2_paragraphs" placeholder="Paragraphs"></textarea>
-      <input name="solution_v2_images" placeholder="Images (comma separated)">
+      <div id="solutionImagesRows"></div>
+      <button type="button" onclick="addBlogPairRow('solutionImagesRows','img-url','dummy','','','')">
+        Add Image
+      </button>
     </fieldset>
     
     <!-- WHAT WE BUILT -->
@@ -412,6 +415,10 @@ function openCreate(existingData = null) {
 
       // Extract sections from sections array
       const sections = Array.isArray(existingData.sections) ? existingData.sections : [];
+      
+      // 🧹 CLEAR OLD DYNAMIC ROWS (IMPORTANT)
+      document.getElementById("snapshotRows").innerHTML = "";
+      document.getElementById("techCards").innerHTML = "";
       
       sections.forEach((section) => {
         const type = section?.type || "";

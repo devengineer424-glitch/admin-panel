@@ -426,6 +426,7 @@ async function save(event) {
       }));
     
     if (snapshotItems.length) {
+      editedSectionTypes.add("snapshot_strip");
       newSections.push({
         type: "snapshot_strip",
         data: { items: snapshotItems }
@@ -467,7 +468,13 @@ async function save(event) {
         data: {
           title: cleanValue(data.solution_v2_title),
           paragraphs: data.solution_v2_paragraphs?.split("\n"),
-          images: data.solution_v2_images?.split(",").map(i => i.trim())
+          images: getBlogPairRows(
+            "solutionImagesRows",
+            "img-url",
+            "dummy",
+            "url",
+            "dummy"
+          ).map(i => i.url)
         }
       });
     }
