@@ -283,12 +283,13 @@ function addTableColumn(key = "", label = "") {
   const colDiv = document.createElement("div");
   colDiv.className = "table-column";
   colDiv.dataset.colId = colId;
+  colDiv.dataset.key = key || "";
 
-  const keyInput = document.createElement("input");
-  keyInput.type = "text";
-  keyInput.className = "table-col-key";
-  keyInput.placeholder = "key (internal)";
-  keyInput.value = key;
+  // const keyInput = document.createElement("input");
+  // keyInput.type = "text";
+  // keyInput.className = "table-col-key";
+  // keyInput.placeholder = "key (internal)";
+  // keyInput.value = key;
 
   const labelInput = document.createElement("input");
   labelInput.type = "text";
@@ -311,7 +312,7 @@ function addTableColumn(key = "", label = "") {
   });
 
   colDiv.appendChild(labelInput);
-  colDiv.appendChild(keyInput);
+  // colDiv.appendChild(keyInput);
   colDiv.appendChild(removeBtn);
 
   cols.appendChild(colDiv);
@@ -337,7 +338,7 @@ function addTableRow(cellValues = {}) {
   // create cells based on columns order
   Array.from(cols.querySelectorAll('.table-column')).forEach((col) => {
     const colId = col.dataset.colId;
-    const key = (col.querySelector('.table-col-key')?.value || '').trim();
+    const key = col.dataset.key;
     const label = (col.querySelector('.table-col-label')?.value || '').trim();
 
     const cellInput = document.createElement("input");
@@ -397,21 +398,55 @@ function getTableEditorData() {
   const { cols, rows } = _ensureTableContainers();
   if (!cols || !rows) return null;
 
+  const usedKeys = new Set();
+
+  const generateKey = (label) => {
+    let base = String(label || "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "_")        // spaces → _
+      .replace(/[^a-z0-9_]/g, ""); // remove special chars
+
+    if (!base) {
+      base = `col_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    let key = base;
+    let i = 1;
+
+    while (usedKeys.has(key)) {
+      key = `${base}_${i++}`;
+    }
+
+    usedKeys.add(key);
+    return key;
+  };
+
   const columns = Array.from(cols.querySelectorAll('.table-column')).map((col) => {
-    const keyRaw = (col.querySelector('.table-col-key')?.value || '').trim();
-    const label = (col.querySelector('.table-col-label')?.value || '').trim();
-    const key = keyRaw || label.toLowerCase().replace(/[^a-z0-9]+/g, '_') || `col_${Math.random().toString(36).slice(2,7)}`;
-    return { key, label };
-  });
+  const label = (col.querySelector('.table-col-label')?.value || '').trim();
+
+  // 🔥 reuse old key if exists
+  const existingKey = col.dataset.key;
+
+  const key = existingKey || generateKey(label);
+
+  return {
+    label: label,
+    key: key,
+  };
+});
 
   const rowsData = Array.from(rows.querySelectorAll('.table-row')).map((r) => {
     const obj = {};
+
     Array.from(r.querySelectorAll('.table-cell')).forEach((cell, idx) => {
       const col = columns[idx];
       const key = col ? col.key : `col_${idx}`;
       const value = (cell.value || '').trim();
+
       obj[key] = { value, color: '#ffffff' };
     });
+
     return obj;
   });
 

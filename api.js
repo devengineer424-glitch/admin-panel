@@ -325,6 +325,31 @@ async function save(event) {
       editedSectionTypes.add("results");
     }
 
+
+    // TESTING DUAL SECTION
+    if (
+      data.test_left_title ||
+      data.test_right_title
+    ) {
+      newSections.push({
+        type: "testing_dual",
+        data: {
+          left: {
+            eyebrow: cleanValue(data.test_left_eyebrow),
+            title: cleanValue(data.test_left_title),
+            highlight: cleanValue(data.test_left_highlight),
+            description: cleanValue(data.test_left_desc),
+          },
+          right: {
+            eyebrow: cleanValue(data.test_right_eyebrow),
+            title: cleanValue(data.test_right_title),
+            highlight: cleanValue(data.test_right_highlight),
+            description: cleanValue(data.test_right_desc),
+          },
+        },
+      });
+    }
+
     // Features section
     try {
       if (typeof getFeaturesFromRows === "function") {

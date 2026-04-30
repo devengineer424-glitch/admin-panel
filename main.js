@@ -146,6 +146,24 @@ function openCreate(existingData = null) {
       <div id="approachRows"></div>
     </fieldset>
 
+
+    <!-- TESTING & IMPLEMENTATION (DUAL) -->
+    <fieldset>
+      <legend>🧪 Testing & Implementation (Dual)</legend>
+    
+      <h4>LEFT SIDE</h4>
+      <input name="test_left_eyebrow" placeholder="Eyebrow (e.g. Testing & Implementation)">
+      <input name="test_left_title" placeholder="Title (e.g. Built for)">
+      <input name="test_left_highlight" placeholder="Highlight (e.g. Real-World Use)">
+      <textarea name="test_left_desc" placeholder="Description"></textarea>
+    
+      <h4>RIGHT SIDE</h4>
+      <input name="test_right_eyebrow" placeholder="Eyebrow (e.g. Discovery Engine)">
+      <input name="test_right_title" placeholder="Title (e.g. Addressing)">
+      <input name="test_right_highlight" placeholder="Highlight (e.g. Ethical Challenges)">
+      <textarea name="test_right_desc" placeholder="Description"></textarea>
+    </fieldset>
+
     <!-- FEATURES SECTION -->
     <fieldset>
       <legend>✨ Features</legend>
@@ -378,7 +396,20 @@ function openCreate(existingData = null) {
               addBlogPairRow("approachRows", "approach-step", "approach-desc", "Step", "Description", step, "");
             });
           }
-        } else if (type === "features" && data) {
+        }else if (type === "testing_dual" && data) {
+          const left = data.left || {};
+          const right = data.right || {};
+        
+          setField("test_left_eyebrow", left.eyebrow);
+          setField("test_left_title", left.title);
+          setField("test_left_highlight", left.highlight);
+          setField("test_left_desc", left.description);
+        
+          setField("test_right_eyebrow", right.eyebrow);
+          setField("test_right_title", right.title);
+          setField("test_right_highlight", right.highlight);
+          setField("test_right_desc", right.description);
+        }else if (type === "features" && data) {
           // Features may be stored as an array of feature objects or an object with `features` array
           const featureList = Array.isArray(data) ? data : Array.isArray(data.features) ? data.features : [];
           featureList.forEach((f) => {
