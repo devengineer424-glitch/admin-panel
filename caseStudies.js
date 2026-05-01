@@ -104,7 +104,6 @@ function setupCaseStudyFormHandlers() {
   const addGoalBtn = document.getElementById("addGoalBtn");
   const addApproachBtn = document.getElementById("addApproachBtn");
   const addBenefitBtn = document.getElementById("addBenefitBtn");
-  const addResultBtn = document.getElementById("addResultBtn");
   const addFeatureBtn = document.getElementById("addFeatureBtn");
   const addMetricBtn = document.getElementById("addMetricBtn");
   const addTableColumnBtn = document.getElementById("addTableColumnBtn");
@@ -170,10 +169,6 @@ function setupCaseStudyFormHandlers() {
         "Icon/Emoji (optional)"
       )
     );
-  }
-
-  if (addResultBtn) {
-    addResultBtn.addEventListener("click", () => addResultRow());
   }
 
   if (addFeatureBtn) {

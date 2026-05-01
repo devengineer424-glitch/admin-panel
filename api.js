@@ -236,7 +236,6 @@ async function save(event) {
             "solution_v2",
             "what_we_built",
             "technology",
-            "results",
             "final_cta_v2",
           ]),
     ]);
@@ -332,28 +331,6 @@ async function save(event) {
       });
       editedSectionTypes.add("testimonial");
     }
-
-    // Results section
-    const resultsRows = getResultsFromRows();
-    if (isDesignTwo && resultsRows.length > 0) {
-      const valid = resultsRows.every((item) => item.metric && item.value);
-      if (!valid) {
-        status.innerHTML =
-          "<span class='error'>Each result row needs both metric and value</span>";
-        return;
-      }
-      newSections.push({
-        type: "results",
-        data: {
-          qualitative: resultsRows.map(r => ({
-            metric: r.metric,
-            value: r.value,
-          })),
-        },
-      });
-      editedSectionTypes.add("results");
-    }
-
 
     // TESTING DUAL SECTION
     if (isDesignOne && (data.test_left_title || data.test_right_title)) {

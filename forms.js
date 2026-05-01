@@ -1,40 +1,5 @@
 // Form Handling & Data Collection
 
-function addResultRow(metric = "", value = "") {
-  const container = document.getElementById("resultsRows");
-
-  if (!container) return;
-
-  const row = document.createElement("div");
-  row.className = "result-row";
-  const metricInput = document.createElement("input");
-  metricInput.type = "text";
-  metricInput.className = "result-metric";
-  metricInput.placeholder = "Metric (e.g. Conversion Rate Increase)";
-  metricInput.value = metric;
-
-  const valueInput = document.createElement("input");
-  valueInput.type = "text";
-  valueInput.className = "result-value";
-  valueInput.placeholder = "Value (e.g. 150%)";
-  valueInput.value = value;
-
-  const removeBtn = document.createElement("button");
-  removeBtn.type = "button";
-  removeBtn.className = "btn btn-danger btn-small";
-  removeBtn.textContent = "Remove";
-
-  removeBtn.addEventListener("click", () => {
-    row.remove();
-  });
-
-  row.appendChild(metricInput);
-  row.appendChild(valueInput);
-  row.appendChild(removeBtn);
-
-  container.appendChild(row);
-}
-
 function addBlogPairRow(
   containerId,
   firstClass,
@@ -200,17 +165,6 @@ function getBlogPairRows(
     });
 }
 
-function getResultsFromRows() {
-  const rows = document.querySelectorAll("#resultsRows .result-row");
-
-  return Array.from(rows)
-    .map((row) => ({
-      metric: (row.querySelector(".result-metric")?.value || "").trim(),
-      value: (row.querySelector(".result-value")?.value || "").trim(),
-    }))
-    .filter((item) => item.metric || item.value);
-}
-
 function validateRequiredBlogFields(values, status) {
   const missing = [];
 
@@ -269,7 +223,6 @@ function initializeCaseStudyEmptyRows() {
   const goalsBtn = document.getElementById("addGoalBtn");
   const approachBtn = document.getElementById("addApproachBtn");
   const benefitBtn = document.getElementById("addBenefitBtn");
-  const resultBtn = document.getElementById("addResultBtn");
   const featureBtn = document.getElementById("addFeatureBtn");
   const metricBtn = document.getElementById("addMetricBtn");
 
@@ -283,7 +236,6 @@ function initializeCaseStudyEmptyRows() {
     if (metricBtn) metricBtn.click();
   } else {
     if (goalsBtn) goalsBtn.click();
-    if (resultBtn) resultBtn.click();
   }
 }
 
@@ -455,13 +407,6 @@ function populateCaseStudyForm(form, existingData) {
       if (data.testimonial) {
         setFieldValue(form, "testimonial_quote", data.testimonial.quote || "");
         setFieldValue(form, "testimonial_author", data.testimonial.author || "");
-      }
-    } else if (type === "results" && data) {
-      // Only populate results for design 2
-      if (String(normalizedDesign) === "2" && Array.isArray(data.qualitative)) {
-        data.qualitative.forEach((result) => {
-          addResultRow(result.metric || "", result.value || "");
-        });
       }
     } else if (type === "cta" && data) {
       setFieldValue(form, "cta_title", data.title);
