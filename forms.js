@@ -495,8 +495,8 @@ async function openCreate(existingData = null) {
       if (finalCtaSelect) {
         finalCtaSelect.innerHTML = "";
         const placeholder = document.createElement("option");
-        placeholder.value = "";
-        placeholder.textContent = "Select Link";
+        placeholder.value = "/";
+        placeholder.textContent = "/";
         finalCtaSelect.appendChild(placeholder);
         if (Array.isArray(CTA_ACTION_OPTIONS)) {
           CTA_ACTION_OPTIONS.forEach((opt) => {
