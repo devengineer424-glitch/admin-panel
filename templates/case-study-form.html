@@ -1,0 +1,228 @@
+<!-- BASIC INFO -->
+<fieldset data-design="shared">
+  <legend>📋 Basic Information</legend>
+  <input name="slug" placeholder="Slug" required>
+  <div id="slugHint" class="help-text">Use lowercase words separated by hyphens.</div>
+  <input name="title" placeholder="Title" required>
+  <input name="client" placeholder="Client" required>
+  <input name="industry" placeholder="Industry" required>
+  <input name="image" placeholder="Hero Image URL" required>
+  <textarea name="excerpt" placeholder="Excerpt (short description)" required></textarea>
+  <select name="design" required>
+    <option value="1">Design 1</option>
+    <option value="2">Design 2</option>
+  </select>
+</fieldset>
+
+<!-- TAGS -->
+<fieldset data-design="shared">
+  <legend>🏷️ Tags</legend>
+  <div class="tag-editor">
+    <div id="tagChips"></div>
+    <input id="tagInput" type="text" placeholder="Type a tag and press Enter">
+  </div>
+</fieldset>
+
+<!-- HERO SECTION -->
+<fieldset data-design="shared">
+  <legend>🎨 Hero Section</legend>
+  <input name="hero_title" placeholder="Hero Title">
+  <input name="hero_subtitle" placeholder="Hero Subtitle">
+  <input name="hero_image" placeholder="Hero Image URL">
+</fieldset>
+
+<!-- PROJECT OVERVIEW -->
+<fieldset data-design="2">
+  <legend>🎯 Project Overview</legend>
+  <textarea name="overview_summary" placeholder="Summary of the project"></textarea>
+  <div class="results-header">
+    <span class="results-title">Goals</span>
+    <button type="button" class="btn btn-primary btn-small" id="addGoalBtn">Add Goal</button>
+  </div>
+  <div id="goalsRows"></div>
+</fieldset>
+
+<!-- SNAPSHOT STRIP -->
+<fieldset data-design="2">
+  <legend>📊 Snapshot Strip</legend>
+  <div id="snapshotRows"></div>
+  <button type="button" class="btn btn-primary btn-small" onclick="addSnapshotRow()">Add Item</button>
+</fieldset>
+
+<!-- ABOUT -->
+<fieldset data-design="2">
+  <legend>📖 About Section</legend>
+  <input name="about_label" placeholder="Label (e.g. About GeoStats)">
+  <input name="about_title" placeholder="Title">
+  <textarea name="about_paragraphs" placeholder="Paragraphs (one per line)"></textarea>
+  <input name="about_image" placeholder="Image URL">
+</fieldset>
+
+<!-- CHALLENGE V2 -->
+<fieldset data-design="2">
+  <legend>⚠️ Challenge (Design 2)</legend>
+  <input name="challenge_v2_title" placeholder="Title">
+  <textarea name="challenge_v2_paragraphs" placeholder="Paragraphs"></textarea>
+  <input name="challenge_v2_image" placeholder="Image URL">
+</fieldset>
+
+<!-- SOLUTION V2 -->
+<fieldset data-design="2">
+  <legend>💡 Solution</legend>
+  <input name="solution_v2_title" placeholder="Title">
+  <textarea name="solution_v2_paragraphs" placeholder="Paragraphs"></textarea>
+  <div id="solutionImagesRows"></div>
+  <button type="button" onclick="addSolutionImageRow()">Add Image</button>
+</fieldset>
+
+<!-- WHAT WE BUILT -->
+<fieldset data-design="2">
+  <legend>🛠 What We Built</legend>
+  <input name="what_we_built_title" placeholder="Title">
+  <textarea name="what_we_built_paragraphs" placeholder="Paragraphs"></textarea>
+  <div id="whatWeBuiltImagesRows"></div>
+  <button type="button" onclick="addWhatWeBuiltImageRow()">Add Image</button>
+</fieldset>
+
+<!-- TECHNOLOGY -->
+<fieldset data-design="2">
+  <legend>⚙️ Technology</legend>
+  <input name="technology_title" placeholder="Title">
+  <textarea name="technology_paragraphs" placeholder="Paragraphs"></textarea>
+  <div id="techCards"></div>
+  <button type="button" onclick="addTechCard()">Add Card</button>
+</fieldset>
+
+<!-- FINAL CTA V2 -->
+<fieldset data-design="2">
+  <legend>🚀 Final CTA</legend>
+  <input name="cta_v2_title" placeholder="Title">
+  <textarea name="cta_v2_desc" placeholder="Description"></textarea>
+  <input name="cta_v2_text" placeholder="Button Text">
+  <select name="cta_v2_link"></select>
+</fieldset>
+
+<!-- TABLE SECTION (friendly editor) -->
+<fieldset data-design="1">
+  <legend>📋 Table</legend>
+  <label class="field-label">Table Title</label>
+  <input name="table_title" placeholder="Table title">
+  <div class="results-header">
+    <span class="results-title">Columns</span>
+    <button type="button" class="btn btn-primary btn-small" id="addTableColumnBtn">Add Column</button>
+  </div>
+  <div id="tableColumns"></div>
+
+  <div class="results-header" style="margin-top:10px;">
+    <span class="results-title">Rows</span>
+    <button type="button" class="btn btn-primary btn-small" id="addTableRowBtn">Add Row</button>
+  </div>
+  <div id="tableRows"></div>
+  <div class="help-text">Use the controls to add/remove columns and rows. Cells are simple text values.</div>
+</fieldset>
+
+<!-- CHALLENGE SECTION -->
+<fieldset data-design="1">
+  <legend>⚡ Challenge</legend>
+  <input name="challenge_title" placeholder="Challenge Title">
+  <input name="challenge_subtitle" placeholder="Challenge Subtitle">
+  <textarea name="challenge_content" placeholder="Challenge Content/Description"></textarea>
+  <input name="challenge_image" placeholder="Challenge Image URL">
+</fieldset>
+
+<!-- SOLUTION SECTION -->
+<fieldset data-design="1">
+  <legend>✅ Solution</legend>
+  <textarea name="solution_description" placeholder="Solution Description"></textarea>
+  <div class="results-header">
+    <span class="results-title">Approach Steps</span>
+    <button type="button" class="btn btn-primary btn-small" id="addApproachBtn">Add Step</button>
+  </div>
+  <div id="approachRows"></div>
+</fieldset>
+
+<!-- TESTING & IMPLEMENTATION (DUAL) -->
+<fieldset data-design="1">
+  <legend>🧪 Testing & Implementation (Dual)</legend>
+
+  <h4>LEFT SIDE</h4>
+  <input name="test_left_eyebrow" placeholder="Eyebrow (e.g. Testing & Implementation)">
+  <input name="test_left_title" placeholder="Title (e.g. Built for)">
+  <input name="test_left_highlight" placeholder="Highlight (e.g. Real-World Use)">
+  <textarea name="test_left_desc" placeholder="Description"></textarea>
+
+  <h4>RIGHT SIDE</h4>
+  <input name="test_right_eyebrow" placeholder="Eyebrow (e.g. Discovery Engine)">
+  <input name="test_right_title" placeholder="Title (e.g. Addressing)">
+  <input name="test_right_highlight" placeholder="Highlight (e.g. Ethical Challenges)">
+  <textarea name="test_right_desc" placeholder="Description"></textarea>
+</fieldset>
+
+<!-- FEATURES SECTION -->
+<fieldset data-design="1">
+  <legend>✨ Features</legend>
+  <div class="results-header">
+    <span class="results-title">Feature Items</span>
+    <button type="button" class="btn btn-primary btn-small" id="addFeatureBtn">Add Feature</button>
+  </div>
+  <div id="featuresRows"></div>
+</fieldset>
+
+<!-- BENEFITS SECTION -->
+<fieldset data-design="1">
+  <legend>🚀 Benefits</legend>
+  <input name="benefits_title" placeholder="Benefits Title">
+  <input name="benefits_subtitle" placeholder="Benefits Subtitle">
+  <textarea name="benefits_description" placeholder="Benefits Description"></textarea>
+  <div class="results-header">
+    <span class="results-title">Benefit Items</span>
+    <button type="button" class="btn btn-primary btn-small" id="addBenefitBtn">Add Benefit</button>
+  </div>
+  <div id="benefitsRows"></div>
+</fieldset>
+
+<!-- TESTIMONIAL SECTION -->
+<fieldset data-design="1">
+  <legend>💬 Testimonial</legend>
+  <textarea name="testimonial_quote" placeholder="Quote from client/user"></textarea>
+  <input name="testimonial_author" placeholder="Author Name">
+</fieldset>
+
+<!-- RESULTS SECTION -->
+<fieldset data-design="2">
+  <legend>📊 Results</legend>
+  <div class="results-header">
+    <span class="results-title">Qualitative Results</span>
+    <button type="button" class="btn btn-primary btn-small" id="addResultBtn">Add Result</button>
+  </div>
+  <div id="resultsRows"></div>
+</fieldset>
+
+<!-- METRICS SECTION -->
+<fieldset data-design="1">
+  <legend>📈 Metrics</legend>
+  <input name="metrics_title" placeholder="Metrics title (e.g. Key Metrics)">
+  <input name="metrics_subtitle" placeholder="Metrics subtitle (optional)">
+  <textarea name="metrics_description" placeholder="Metrics description (optional)"></textarea>
+  <div class="results-header">
+    <span class="results-title">Metric Items</span>
+    <button type="button" class="btn btn-primary btn-small" id="addMetricBtn">Add Metric</button>
+  </div>
+  <div id="metricsRows"></div>
+  <div class="help-text">Each metric is a small highlighted item with optional icon and label.</div>
+</fieldset>
+
+<!-- CTA SECTION -->
+<fieldset data-design="1">
+  <legend>🔗 Call to Action</legend>
+  <input name="cta_title" placeholder="CTA Title">
+  <textarea name="cta_description" placeholder="CTA Description"></textarea>
+  <input name="cta_button_text" placeholder="Button Text">
+  <select name="cta_button_link">
+    <option value="">Select Link</option>
+    <option value="/contact-us">Contact Page</option>
+    <option value="/case-studies">Case Studies</option>
+    <option value="/blogs">Blogs</option>
+    <option value="/about">About</option>
+  </select>
+</fieldset>

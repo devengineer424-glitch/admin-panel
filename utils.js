@@ -207,3 +207,34 @@ function ensureFieldLabels(form) {
     field.parentNode.insertBefore(label, field);
   });
 }
+
+const templateCache = new Map();
+
+async function loadHtmlTemplate(templatePath) {
+  const cacheKey = String(templatePath || "").trim();
+
+  if (!cacheKey) {
+    throw new Error("Template path is required");
+  }
+
+  if (templateCache.has(cacheKey)) {
+    return templateCache.get(cacheKey);
+  }
+
+  const response = await fetch(cacheKey, { cache: "no-store" });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load template: ${cacheKey}`);
+  }
+
+  const html = await response.text();
+  templateCache.set(cacheKey, html);
+  return html;
+}
+
+function renderTemplate(template, values = {}) {
+  return String(template || "").replace(/\{\{(\w+)\}\}/g, (_match, key) => {
+    const value = values[key];
+    return value === null || value === undefined ? "" : String(value);
+  });
+}

@@ -1,0 +1,20 @@
+<div class="blog-design-row">
+<span class="design-badge design-{{designNumber}}"><span class="design-dot"></span>Design {{designNumber}}</span>
+</div>
+<div class="blog-title">{{title}}</div>
+<div class="blog-slug">/{{slug}}</div>
+<div class="blog-meta">
+<span>{{category}}</span>
+<span>•</span>
+<span>{{author}}</span>
+<span>•</span>
+<span>{{dateLabel}}</span>
+</div>
+<div class="blog-tags">{{tagsMarkup}}</div>
+<div class="blog-excerpt">{{excerpt}}</div>
+<div class="blog-actions">
+<button class="btn btn-edit" data-id="{{id}}" onclick="edit(this.dataset.id)">Edit</button>
+<button class="btn btn-danger" data-id="{{id}}" onclick="removeItem(this.dataset.id)">Delete</button>
+<button class="btn btn-open" data-slug="{{slugRaw}}" onclick="openBlogInNewTab(this.dataset.slug)">Open</button>
+<button class="btn btn-share" data-slug="{{slugRaw}}" onclick="copyBlogUrl(this.dataset.slug, this)">Copy URL</button>
+</div>

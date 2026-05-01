@@ -94,7 +94,7 @@ function renderTable(data) {
   });
 }
 
-function renderMessagesView(data) {
+async function renderMessagesView(data) {
   currentItems = Array.isArray(data) ? data : [];
 
   const container = document.getElementById("messagesView");
@@ -104,6 +104,11 @@ function renderMessagesView(data) {
     container.innerHTML = '<div class="empty-state">No messages yet.</div>';
     return;
   }
+
+  const legendTemplate = await loadHtmlTemplate("templates/design-legend.html");
+  const cardTemplate = await loadHtmlTemplate("templates/message-card.html");
+
+  container.insertAdjacentHTML("beforeend", legendTemplate);
 
   const grid = document.createElement("div");
   grid.className = "messages-grid";
@@ -116,17 +121,13 @@ function renderMessagesView(data) {
       ? new Date(msg.created_at).toLocaleString()
       : "";
 
-    card.innerHTML = `
-    <div class="message-top">
-      <div>
-        <div class="message-name">${escapeHtml(msg.name || "Unknown")}</div>
-        <div class="message-email">${escapeHtml(msg.email || "")}</div>
-      </div>
-      <div class="message-date">${escapeHtml(createdAt)}</div>
-    </div>
-    <div class="message-subject">${escapeHtml(msg.subject || "No Subject")}</div>
-    <div class="message-body">${escapeHtml(msg.message || "")}</div>
-    `;
+    card.innerHTML = renderTemplate(cardTemplate, {
+      name: escapeHtml(msg.name || "Unknown"),
+      email: escapeHtml(msg.email || ""),
+      createdAt: escapeHtml(createdAt),
+      subject: escapeHtml(msg.subject || "No Subject"),
+      message: escapeHtml(msg.message || ""),
+    });
 
     grid.appendChild(card);
   });

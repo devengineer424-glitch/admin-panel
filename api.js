@@ -211,6 +211,35 @@ async function save(event) {
 
   if (current === "case-studies") {
     data.tags = getTagsFromChips();
+    const selectedDesign = Number.parseInt(String(data.design || "1"), 10) || 1;
+    const isDesignOne = selectedDesign === 1;
+    const isDesignTwo = !isDesignOne;
+    const allowedSectionTypes = new Set([
+      "hero",
+      "table",
+      ...(isDesignOne
+        ? [
+            "challenge",
+            "solution",
+            "testing_dual",
+            "features",
+            "benefits",
+            "testimonial",
+            "metrics",
+            "cta",
+          ]
+        : [
+            "project_overview",
+            "snapshot_strip",
+            "about",
+            "challenge_v2",
+            "solution_v2",
+            "what_we_built",
+            "technology",
+            "results",
+            "final_cta_v2",
+          ]),
+    ]);
 
     // Extract section data from form fields
     const newSections = [];
@@ -229,9 +258,9 @@ async function save(event) {
       editedSectionTypes.add("hero");
     }
 
-    // Project Overview section
+    // Project Overview section (Design 2 only)
     const goalsRows = getBlogPairRows("goalsRows", "goal-heading", "goal-text", "heading", "text", "goal-emoji", "emoji");
-    if (data.overview_summary || goalsRows.length > 0) {
+    if (isDesignTwo && (data.overview_summary || goalsRows.length > 0)) {
       newSections.push({
         type: "project_overview",
         data: {
@@ -247,7 +276,7 @@ async function save(event) {
     }
 
     // Challenge section
-    if (data.challenge_title || data.challenge_subtitle || data.challenge_content || data.challenge_image) {
+    if (isDesignOne && (data.challenge_title || data.challenge_subtitle || data.challenge_content || data.challenge_image)) {
       newSections.push({
         type: "challenge",
         data: {
@@ -262,7 +291,7 @@ async function save(event) {
 
     // Solution section
     const approachRows = getBlogPairRows("approachRows", "approach-step", "approach-desc", "step", "description");
-    if (data.solution_description || approachRows.length > 0) {
+    if (isDesignOne && (data.solution_description || approachRows.length > 0)) {
       newSections.push({
         type: "solution",
         data: {
@@ -275,7 +304,7 @@ async function save(event) {
 
     // Benefits section
     const benefitsRows = getBlogPairRows("benefitsRows", "benefit-title", "benefit-text", "title", "text", "benefit-icon", "icon");
-    if (data.benefits_title || data.benefits_subtitle || data.benefits_description || benefitsRows.length > 0) {
+    if (isDesignOne && (data.benefits_title || data.benefits_subtitle || data.benefits_description || benefitsRows.length > 0)) {
       newSections.push({
         type: "benefits",
         data: {
@@ -293,7 +322,7 @@ async function save(event) {
     }
 
     // Testimonial section
-    if (data.testimonial_quote || data.testimonial_author) {
+    if (isDesignOne && (data.testimonial_quote || data.testimonial_author)) {
       newSections.push({
         type: "testimonial",
         data: {
@@ -306,7 +335,7 @@ async function save(event) {
 
     // Results section
     const resultsRows = getResultsFromRows();
-    if (resultsRows.length > 0) {
+    if (isDesignTwo && resultsRows.length > 0) {
       const valid = resultsRows.every((item) => item.metric && item.value);
       if (!valid) {
         status.innerHTML =
@@ -327,10 +356,7 @@ async function save(event) {
 
 
     // TESTING DUAL SECTION
-    if (
-      data.test_left_title ||
-      data.test_right_title
-    ) {
+    if (isDesignOne && (data.test_left_title || data.test_right_title)) {
       newSections.push({
         type: "testing_dual",
         data: {
@@ -348,11 +374,12 @@ async function save(event) {
           },
         },
       });
+      editedSectionTypes.add("testing_dual");
     }
 
     // Features section
     try {
-      if (typeof getFeaturesFromRows === "function") {
+      if (isDesignOne && typeof getFeaturesFromRows === "function") {
         const features = getFeaturesFromRows();
         if (features && Array.isArray(features) && features.length) {
           newSections.push({ type: "features", data: features });
@@ -370,7 +397,7 @@ async function save(event) {
       const mTitle = cleanValue(data.metrics_title);
       const mSubtitle = cleanValue(data.metrics_subtitle);
       const mDescription = cleanValue(data.metrics_description);
-      if (mTitle || mSubtitle || mDescription || (typeof getMetricsFromRows === "function" && getMetricsFromRows().length)) {
+      if (isDesignOne && (mTitle || mSubtitle || mDescription || (typeof getMetricsFromRows === "function" && getMetricsFromRows().length))) {
         const metricsItems = (typeof getMetricsFromRows === "function") ? getMetricsFromRows() : [];
         const metricsData = {
           title: mTitle || "",
@@ -394,27 +421,6 @@ async function save(event) {
       return;
     }
 
-    // Tech Stack section
-    // Accept comma, semicolon or newline separated values so non-technical admins
-    // can add items one-per-line or comma-separated.
-    const splitList = (str) => {
-      if (!str) return [];
-      return String(str).split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-    };
-    if (data.tech_backend || data.tech_frontend || data.tech_ai_ml || data.tech_database || data.tech_infra) {
-      newSections.push({
-        type: "tech_stack",
-        data: {
-          backend: splitList(data.tech_backend),
-          frontend: splitList(data.tech_frontend),
-          ai_ml: splitList(data.tech_ai_ml),
-          database: splitList(data.tech_database),
-          infra: splitList(data.tech_infra),
-        },
-      });
-      editedSectionTypes.add("tech_stack");
-    }
-
     // ==========================
     // DESIGN 2 SECTIONS START
     // ==========================
@@ -427,7 +433,7 @@ async function save(event) {
         icon: r.querySelector(".snap-icon")?.value
       }));
     
-    if (snapshotItems.length) {
+    if (isDesignTwo && snapshotItems.length) {
       editedSectionTypes.add("snapshot_strip");
       newSections.push({
         type: "snapshot_strip",
@@ -437,7 +443,7 @@ async function save(event) {
     
     
     // ABOUT
-    if (data.about_title || data.about_paragraphs || data.about_image) {
+    if (isDesignTwo && (data.about_title || data.about_paragraphs || data.about_image)) {
       newSections.push({
         type: "about",
         data: {
@@ -451,7 +457,7 @@ async function save(event) {
     
     
     // CHALLENGE V2
-    if (data.challenge_v2_title || data.challenge_v2_paragraphs) {
+    if (isDesignTwo && (data.challenge_v2_title || data.challenge_v2_paragraphs)) {
       newSections.push({
         type: "challenge_v2",
         data: {
@@ -464,7 +470,7 @@ async function save(event) {
     
     
     // SOLUTION V2
-    if (data.solution_v2_title || data.solution_v2_paragraphs) {
+    if (isDesignTwo && (data.solution_v2_title || data.solution_v2_paragraphs)) {
       // read single-image inputs (.solution-image-url) from the friendly editor
       const solutionImageInputs = Array.from(document.querySelectorAll("#solutionImagesRows .solution-image-url"));
       const solutionImages = solutionImageInputs.map(i => (i.value || "").trim()).filter(Boolean);
@@ -481,7 +487,7 @@ async function save(event) {
     
     
     // WHAT WE BUILT
-    if (data.what_we_built_title || data.what_we_built_paragraphs) {
+    if (isDesignTwo && (data.what_we_built_title || data.what_we_built_paragraphs)) {
       // read single-image inputs for What We Built
       const whatBuiltInputs = Array.from(document.querySelectorAll("#whatWeBuiltImagesRows .what-built-image-url"));
       const whatBuiltImages = whatBuiltInputs.map(i => (i.value || "").trim()).filter(Boolean);
@@ -505,7 +511,7 @@ async function save(event) {
         icon: r.querySelector(".tech-icon")?.value
       }));
     
-    if (data.technology_title || techCards.length) {
+    if (isDesignTwo && (data.technology_title || techCards.length)) {
       newSections.push({
         type: "technology",
         data: {
@@ -520,7 +526,7 @@ async function save(event) {
     
     
     // FINAL CTA V2
-    if (data.cta_v2_title || data.cta_v2_desc) {
+    if (isDesignTwo && (data.cta_v2_title || data.cta_v2_desc)) {
       newSections.push({
         type: "final_cta_v2",
         data: {
@@ -535,7 +541,7 @@ async function save(event) {
     }
 
     // CTA section
-    if (data.cta_title || data.cta_description || data.cta_button_text || data.cta_button_link) {
+    if (isDesignOne && (data.cta_title || data.cta_description || data.cta_button_text || data.cta_button_link)) {
       newSections.push({
         type: "cta",
         data: {
@@ -570,7 +576,7 @@ async function save(event) {
       const existingItem = currentItems.find(item => String(item.id) === String(editId));
       if (existingItem && Array.isArray(existingItem.sections)) {
         existingItem.sections.forEach(section => {
-          if (!editedSectionTypes.has(section.type)) {
+          if (!editedSectionTypes.has(section.type) && allowedSectionTypes.has(section.type)) {
             newSections.push(section);
           }
         });

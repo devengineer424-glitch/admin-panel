@@ -1,6 +1,6 @@
 // Case Study Management & Rendering
 
-function renderCaseStudiesView(data) {
+async function renderCaseStudiesView(data) {
   currentItems = Array.isArray(data) ? data : [];
 
   const container = document.getElementById("messagesView");
@@ -11,24 +11,20 @@ function renderCaseStudiesView(data) {
     return;
   }
 
-  const legend = document.createElement("div");
-  legend.className = "design-legend";
-  legend.innerHTML = `
-  <span class="design-legend-item design-1"><span class="design-dot"></span>Design 1</span>
-  <span class="design-legend-item design-2"><span class="design-dot"></span>Design 2</span>
-  <span class="design-legend-item design-3"><span class="design-dot"></span>Design 3</span>
-  `;
+  const [legendTemplate, cardTemplate] = await Promise.all([
+    loadHtmlTemplate("templates/case-studies-legend.html"),
+    loadHtmlTemplate("templates/case-study-card.html"),
+  ]);
 
-  container.appendChild(legend);
+  container.insertAdjacentHTML("beforeend", legendTemplate);
 
   const grid = document.createElement("div");
   grid.className = "case-studies-grid";
 
   currentItems.forEach((caseStudy) => {
     const card = document.createElement("div");
-    const designNumber = [1, 2, 3].includes(Number(caseStudy.design))
-      ? Number(caseStudy.design)
-      : 1;
+    const rawDesign = Number(caseStudy.design);
+    const designNumber = rawDesign === 1 ? 1 : 2;
     card.className = `case-study-card design-${designNumber}`;
 
     const excerpt = caseStudy.excerpt || "No description available.";
@@ -53,31 +49,21 @@ function renderCaseStudiesView(data) {
     const designPalette = {
       1: { accent: "#2563eb", tint: "#eff6ff" },
       2: { accent: "#f97316", tint: "#fff7ed" },
-      3: { accent: "#8b5cf6", tint: "#f5f3ff" },
     }[designNumber];
 
     card.style.setProperty("--card-accent", designPalette.accent);
     card.style.setProperty("--card-tint", designPalette.tint);
 
-    card.innerHTML = `
-    <div class="case-design-row">
-    <span class="design-badge design-${designNumber}"><span class="design-dot"></span>Design ${designNumber}</span>
-    </div>
-    <div class="case-title">${escapeHtml(caseStudy.title || "Untitled case study")}</div>
-    <div class="case-client">
-      <strong>${escapeHtml(client)}</strong>
-    </div>
-    <div class="case-meta">
-    <span>${escapeHtml(industry)}</span>
-    </div>
-    <div class="case-tags">${tagsMarkup}</div>
-    <div class="case-excerpt">${escapeHtml(excerpt)}</div>
-    <div class="case-actions">
-    <button class="btn btn-edit" onclick="edit('${caseStudy.id}')">Edit</button>
-    <button class="btn btn-danger" onclick="removeItem('${caseStudy.id}')">Delete</button>
-    <button class="btn btn-open" onclick="openCaseStudyInNewTab('${escapeHtml(caseStudy.slug || "")}')">Open</button>
-    </div>
-    `;
+    card.innerHTML = renderTemplate(cardTemplate, {
+      designNumber,
+      title: escapeHtml(caseStudy.title || "Untitled case study"),
+      client: escapeHtml(client),
+      industry: escapeHtml(industry),
+      tagsMarkup,
+      excerpt: escapeHtml(excerpt),
+      id: escapeHtml(caseStudy.id || ""),
+      slugRaw: escapeHtml(caseStudy.slug || ""),
+    });
 
     grid.appendChild(card);
   });
@@ -92,11 +78,37 @@ function openCaseStudyInNewTab(slug) {
   window.open(caseStudyUrl, "_blank", "noopener,noreferrer");
 }
 
+function applyCaseStudyDesignVisibility() {
+  const form = document.getElementById("dataForm");
+  if (!form) return;
+
+  const designSelect = form.querySelector('select[name="design"]');
+  const design = String(designSelect?.value || "1");
+  const resolved = design === "1" ? "1" : "2";
+
+  const scopedSections = form.querySelectorAll("fieldset[data-design]");
+
+  scopedSections.forEach((section) => {
+    const scope = section.getAttribute("data-design");
+    const show = scope === "shared" || scope === resolved;
+    section.style.display = show ? "" : "none";
+  });
+}
+
 function setupCaseStudyFormHandlers() {
   const form = document.getElementById("dataForm");
   const titleInput = form.querySelector('input[name="title"]');
   const slugInput = form.querySelector('input[name="slug"]');
   const contentInput = form.querySelector('textarea[name="content"]');
+  const designSelect = form.querySelector('select[name="design"]');
+  const addGoalBtn = document.getElementById("addGoalBtn");
+  const addApproachBtn = document.getElementById("addApproachBtn");
+  const addBenefitBtn = document.getElementById("addBenefitBtn");
+  const addResultBtn = document.getElementById("addResultBtn");
+  const addFeatureBtn = document.getElementById("addFeatureBtn");
+  const addMetricBtn = document.getElementById("addMetricBtn");
+  const addTableColumnBtn = document.getElementById("addTableColumnBtn");
+  const addTableRowBtn = document.getElementById("addTableRowBtn");
 
   if (titleInput && slugInput) {
     titleInput.addEventListener("input", () => {
@@ -111,4 +123,74 @@ function setupCaseStudyFormHandlers() {
   if (contentInput) {
     contentInput.addEventListener("input", updateContentPreview);
   }
+
+  if (designSelect) {
+    designSelect.addEventListener("change", applyCaseStudyDesignVisibility);
+  }
+
+  if (addGoalBtn) {
+    addGoalBtn.addEventListener("click", () =>
+      addBlogPairRow(
+        "goalsRows",
+        "goal-heading",
+        "goal-text",
+        "Goal Heading",
+        "Goal Description",
+        "",
+        "",
+        "goal-emoji",
+        "Emoji (optional)"
+      )
+    );
+  }
+
+  if (addApproachBtn) {
+    addApproachBtn.addEventListener("click", () =>
+      addBlogPairRow(
+        "approachRows",
+        "approach-step",
+        "approach-desc",
+        "Step",
+        "Description"
+      )
+    );
+  }
+
+  if (addBenefitBtn) {
+    addBenefitBtn.addEventListener("click", () =>
+      addBlogPairRow(
+        "benefitsRows",
+        "benefit-title",
+        "benefit-text",
+        "Benefit Title",
+        "Benefit Description",
+        "",
+        "",
+        "benefit-icon",
+        "Icon/Emoji (optional)"
+      )
+    );
+  }
+
+  if (addResultBtn) {
+    addResultBtn.addEventListener("click", () => addResultRow());
+  }
+
+  if (addFeatureBtn) {
+    addFeatureBtn.addEventListener("click", () => addFeatureRow());
+  }
+
+  if (addMetricBtn) {
+    addMetricBtn.addEventListener("click", () => addMetricRow());
+  }
+
+  if (addTableColumnBtn) {
+    addTableColumnBtn.addEventListener("click", () => addTableColumn());
+  }
+
+  if (addTableRowBtn) {
+    addTableRowBtn.addEventListener("click", () => addTableRow());
+  }
+
+  applyCaseStudyDesignVisibility();
 }

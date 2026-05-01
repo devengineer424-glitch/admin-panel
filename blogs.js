@@ -1,6 +1,6 @@
 // Blog Rendering & Editing Logic
 
-function renderBlogsView(data) {
+async function renderBlogsView(data) {
   currentItems = Array.isArray(data) ? data : [];
 
   const container = document.getElementById("messagesView");
@@ -11,15 +11,12 @@ function renderBlogsView(data) {
     return;
   }
 
-  const legend = document.createElement("div");
-  legend.className = "design-legend";
-  legend.innerHTML = `
-  <span class="design-legend-item design-1"><span class="design-dot"></span>Design 1</span>
-  <span class="design-legend-item design-2"><span class="design-dot"></span>Design 2</span>
-  <span class="design-legend-item design-3"><span class="design-dot"></span>Design 3</span>
-  `;
+  const [legendTemplate, cardTemplate] = await Promise.all([
+    loadHtmlTemplate("templates/design-legend.html"),
+    loadHtmlTemplate("templates/blog-card.html"),
+  ]);
 
-  container.appendChild(legend);
+  container.insertAdjacentHTML("beforeend", legendTemplate);
 
   const grid = document.createElement("div");
   grid.className = "blogs-grid";
@@ -31,8 +28,7 @@ function renderBlogsView(data) {
       : 1;
     card.className = `blog-card design-${designNumber}`;
 
-    const sourceText =
-      String(blog.content || blog.text_sections?.introduction || "");
+    const sourceText = String(blog.content || blog.text_sections?.introduction || "");
     const excerpt = getBlogExcerpt(sourceText);
     const dateLabel = formatBlogDate(blog);
     const category = blog.meta?.category || "General";
@@ -62,28 +58,18 @@ function renderBlogsView(data) {
     card.style.setProperty("--card-accent", designPalette.accent);
     card.style.setProperty("--card-tint", designPalette.tint);
 
-    card.innerHTML = `
-    <div class="blog-design-row">
-    <span class="design-badge design-${designNumber}"><span class="design-dot"></span>Design ${designNumber}</span>
-    </div>
-    <div class="blog-title">${escapeHtml(blog.title || "Untitled blog")}</div>
-    <div class="blog-slug">/${escapeHtml(blog.slug || "no-slug")}</div>
-    <div class="blog-meta">
-    <span>${escapeHtml(category)}</span>
-    <span>•</span>
-    <span>${escapeHtml(author)}</span>
-    <span>•</span>
-    <span>${escapeHtml(dateLabel)}</span>
-    </div>
-    <div class="blog-tags">${tagsMarkup}</div>
-    <div class="blog-excerpt">${escapeHtml(excerpt)}</div>
-    <div class="blog-actions">
-    <button class="btn btn-edit" onclick="edit('${blog.id}')">Edit</button>
-    <button class="btn btn-danger" onclick="removeItem('${blog.id}')">Delete</button>
-    <button class="btn btn-open" onclick="openBlogInNewTab('${escapeHtml(blog.slug || "")}')">Open</button>
-    <button class="btn btn-share" data-slug="${escapeHtml(blog.slug || "")}" onclick="copyBlogUrl(this.dataset.slug, this)">Copy URL</button>
-    </div>
-    `;
+    card.innerHTML = renderTemplate(cardTemplate, {
+      designNumber,
+      title: escapeHtml(blog.title || "Untitled blog"),
+      slug: escapeHtml(blog.slug || "no-slug"),
+      category: escapeHtml(category),
+      author: escapeHtml(author),
+      dateLabel: escapeHtml(dateLabel),
+      tagsMarkup,
+      excerpt: escapeHtml(excerpt),
+      id: escapeHtml(blog.id || ""),
+      slugRaw: escapeHtml(blog.slug || ""),
+    });
 
     grid.appendChild(card);
   });

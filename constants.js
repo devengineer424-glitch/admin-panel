@@ -1,7 +1,7 @@
 // ============================================================
 // TAG CMS — Project Constants
 // Edit this file to configure your environment.
-// This file must be loaded BEFORE script.js in index.html.
+// This file must be loaded BEFORE the runtime modules in index.html.
 // ============================================================
 
 // Backend API base URL

@@ -1,0 +1,17 @@
+<div class="case-design-row">
+<span class="design-badge design-{{designNumber}}"><span class="design-dot"></span>Design {{designNumber}}</span>
+</div>
+<div class="case-title">{{title}}</div>
+<div class="case-client">
+  <strong>{{client}}</strong>
+</div>
+<div class="case-meta">
+<span>{{industry}}</span>
+</div>
+<div class="case-tags">{{tagsMarkup}}</div>
+<div class="case-excerpt">{{excerpt}}</div>
+<div class="case-actions">
+<button class="btn btn-edit" data-id="{{id}}" onclick="edit(this.dataset.id)">Edit</button>
+<button class="btn btn-danger" data-id="{{id}}" onclick="removeItem(this.dataset.id)">Delete</button>
+<button class="btn btn-open" data-slug="{{slugRaw}}" onclick="openCaseStudyInNewTab(this.dataset.slug)">Open</button>
+</div>
