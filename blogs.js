@@ -2,12 +2,23 @@
 
 async function renderBlogsView(data) {
   currentItems = Array.isArray(data) ? data : [];
+  setSearchCollection(currentItems, (blog) => {
+    const category = blog?.meta?.category || "";
+    const author = blog?.meta?.author || "";
+    const tags = Array.isArray(blog?.tags) ? blog.tags.join(" ") : "";
+    const excerpt = getBlogExcerpt(String(blog.content || blog.text_sections?.introduction || ""));
+    return [blog.title, blog.slug, category, author, tags, excerpt].filter(Boolean).join(" ");
+  });
+
+  const visibleItems = filterSearchCollection();
 
   const container = document.getElementById("messagesView");
   container.innerHTML = "";
 
-  if (currentItems.length === 0) {
-    container.innerHTML = '<div class="empty-state">No blogs yet.</div>';
+  if (visibleItems.length === 0) {
+    container.innerHTML = getSearchQuery()
+      ? '<div class="empty-state">No blogs match your search.</div>'
+      : '<div class="empty-state">No blogs yet.</div>';
     return;
   }
 
@@ -21,7 +32,7 @@ async function renderBlogsView(data) {
   const grid = document.createElement("div");
   grid.className = "blogs-grid";
 
-  currentItems.forEach((blog) => {
+  visibleItems.forEach((blog) => {
     const card = document.createElement("div");
     const designNumber = [1, 2, 3].includes(Number(blog.design_number))
       ? Number(blog.design_number)

@@ -2,12 +2,34 @@
 
 async function renderCaseStudiesView(data) {
   currentItems = Array.isArray(data) ? data : [];
+  setSearchCollection(currentItems, (caseStudy) => {
+    const client = caseStudy?.client || "";
+    const industry = caseStudy?.industry || "";
+    const tags = Array.isArray(caseStudy?.tags) ? caseStudy.tags.join(" ") : "";
+    const sections = Array.isArray(caseStudy?.sections)
+      ? caseStudy.sections
+          .map((section) => {
+            const sectionData = section?.data;
+            return typeof sectionData === "string"
+              ? sectionData
+              : JSON.stringify(sectionData || {});
+          })
+          .join(" ")
+      : "";
+    return [caseStudy.title, caseStudy.slug, client, industry, tags, sections]
+      .filter(Boolean)
+      .join(" ");
+  });
+
+  const visibleItems = filterSearchCollection();
 
   const container = document.getElementById("messagesView");
   container.innerHTML = "";
 
-  if (currentItems.length === 0) {
-    container.innerHTML = '<div class="empty-state">No case studies yet.</div>';
+  if (visibleItems.length === 0) {
+    container.innerHTML = getSearchQuery()
+      ? '<div class="empty-state">No case studies match your search.</div>'
+      : '<div class="empty-state">No case studies yet.</div>';
     return;
   }
 
@@ -21,7 +43,7 @@ async function renderCaseStudiesView(data) {
   const grid = document.createElement("div");
   grid.className = "case-studies-grid";
 
-  currentItems.forEach((caseStudy) => {
+  visibleItems.forEach((caseStudy) => {
     const card = document.createElement("div");
     const rawDesign = Number(caseStudy.design);
     const designNumber = rawDesign === 1 ? 1 : 2;

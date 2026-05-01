@@ -21,6 +21,24 @@ function setAddVisibility() {
     : "inline-block";
 }
 
+function setSearchVisibility(show, placeholder = "") {
+  const searchBar = document.getElementById("searchBar");
+  const searchInput = document.getElementById("searchInput");
+  const clearBtn = document.getElementById("clearSearchBtn");
+
+  if (searchBar) {
+    searchBar.classList.toggle("hidden", !show);
+  }
+
+  if (searchInput && placeholder) {
+    searchInput.placeholder = placeholder;
+  }
+
+  if (clearBtn) {
+    clearBtn.disabled = !show;
+  }
+}
+
 function setMessagesView(show) {
   const table = document.querySelector("table");
   const messagesView = document.getElementById("messagesView");

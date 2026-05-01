@@ -44,7 +44,13 @@
 <div class="main">
 
 <div class="header">
+<div class="header-main">
 <div class="section-title" id="sectionTitle">Blogs</div>
+<div class="search-bar hidden" id="searchBar">
+<input type="search" id="searchInput" placeholder="Search blogs..." autocomplete="off">
+<button type="button" class="btn btn-search-clear" id="clearSearchBtn">Clear</button>
+</div>
+</div>
 <div class="header-actions">
 <button class="btn btn-primary" id="addBtn" onclick="openCreate()">Add New</button>
 <button class="btn btn-copy" id="copyEmailsBtn" onclick="copyAllSubscriberEmails()" style="display:none">Copy All Emails</button>
@@ -89,6 +95,7 @@
 <script src="api.js"></script>
 <script src="utils.js"></script>
 <script src="ui.js"></script>
+<script src="search.js"></script>
 <script src="forms.js"></script>
 
 <!-- Feature modules -->

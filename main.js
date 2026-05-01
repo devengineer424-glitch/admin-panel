@@ -29,6 +29,8 @@ function setupEventListeners() {
   if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
   if (copyEmailsBtn) copyEmailsBtn.addEventListener("click", copyAllSubscriberEmails);
 
+  setupSearchHandlers();
+
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
       const modal = document.getElementById("modal");

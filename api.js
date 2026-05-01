@@ -28,6 +28,8 @@ async function loadBlogs() {
   setAddVisibility();
   setSubscriberActionsVisibility();
   setMessagesView(true);
+  setSearchVisibility(true, "Search blogs by title, slug, tag, author, or category...");
+  clearSearchQuery();
 
   authFetch(API + "/blogs/")
     .then((r) => r.json())
@@ -44,6 +46,8 @@ async function loadCases() {
   setAddVisibility();
   setSubscriberActionsVisibility();
   setMessagesView(true);
+  setSearchVisibility(true, "Search case studies by title, client, industry, tag, or slug...");
+  clearSearchQuery();
 
   authFetch(API + "/case-studies/")
     .then((r) => r.json())
@@ -61,6 +65,8 @@ async function loadSubscribers() {
   setAddVisibility();
   setSubscriberActionsVisibility();
   setMessagesView(false);
+  setSearchVisibility(false);
+  clearSearchQuery();
 
   authFetch(API + "/newsletter/subscribers")
     .then((r) => r.json())
@@ -77,6 +83,8 @@ async function loadMessages() {
   setAddVisibility();
   setSubscriberActionsVisibility();
   setMessagesView(true);
+  setSearchVisibility(false);
+  clearSearchQuery();
 
   authFetch(API + "/contact-messages/")
     .then((r) => r.json())
