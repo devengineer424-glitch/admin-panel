@@ -430,6 +430,10 @@ function populateCaseStudyForm(form, existingData) {
       setFieldValue(form, "challenge_v2_title", data.title);
       setFieldValue(form, "challenge_v2_paragraphs", (data.paragraphs || []).join("\n"));
       setFieldValue(form, "challenge_v2_image", data.image);
+    } else if (type === "analytics" && data) {
+      setFieldValue(form, "analytics_title", data.title);
+      setFieldValue(form, "analytics_paragraphs", (data.paragraphs || []).join("\n"));
+      setFieldValue(form, "analytics_image", data.image);
     } else if (type === "solution_v2" && data) {
       setFieldValue(form, "solution_v2_title", data.title);
       setFieldValue(form, "solution_v2_paragraphs", (data.paragraphs || []).join("\n"));

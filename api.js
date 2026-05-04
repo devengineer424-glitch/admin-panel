@@ -242,6 +242,7 @@ async function save(event) {
             "about",
             "challenge_v2",
             "solution_v2",
+            "analytics",
             "what_we_built",
             "technology",
             "final_cta_v2",
@@ -466,6 +467,19 @@ async function save(event) {
           title: cleanValue(data.solution_v2_title),
           paragraphs: data.solution_v2_paragraphs?.split("\n"),
           images: solutionImages
+        }
+      });
+    }
+
+
+    // ANALYTICS
+    if (isDesignTwo && (data.analytics_title || data.analytics_paragraphs)) {
+      newSections.push({
+        type: "analytics",
+        data: {
+          title: cleanValue(data.analytics_title),
+          paragraphs: data.analytics_paragraphs?.split("\n"),
+          image: cleanValue(data.analytics_image)
         }
       });
     }
