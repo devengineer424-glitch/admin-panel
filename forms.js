@@ -307,8 +307,7 @@ function populateCaseStudyForm(form, existingData) {
       setFieldValue(form, "hero_subtitle", data.subtitle);
       setFieldValue(form, "hero_image", data.image);
     } else if (type === "project_overview" && data) {
-      // Only populate project overview when design is 2
-      if (String(normalizedDesign) === "2") {
+      
       setFieldValue(form, "overview_summary", data.summary);
       if (Array.isArray(data.goals)) {
         data.goals.forEach((goal) => {
@@ -326,7 +325,7 @@ function populateCaseStudyForm(form, existingData) {
           );
         });
       }
-      }
+      
     } else if (type === "table" && data) {
       setFieldValue(form, "table_title", data.title || "");
       try {

@@ -225,6 +225,7 @@ async function save(event) {
     const allowedSectionTypes = new Set([
       "hero",
       "table",
+      "project_overview",
       ...(isDesignOne
         ? [
             "challenge",
@@ -237,7 +238,6 @@ async function save(event) {
             "cta",
           ]
         : [
-            "project_overview",
             "snapshot_strip",
             "about",
             "challenge_v2",
@@ -267,7 +267,7 @@ async function save(event) {
 
     // Project Overview section (Design 2 only)
     const goalsRows = getBlogPairRows("goalsRows", "goal-heading", "goal-text", "heading", "text", "goal-emoji", "emoji");
-    if (isDesignTwo && (data.overview_summary || goalsRows.length > 0)) {
+    if (data.overview_summary || goalsRows.length > 0) {
       newSections.push({
         type: "project_overview",
         data: {
